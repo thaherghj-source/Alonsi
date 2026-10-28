@@ -1,10 +1,10 @@
-// رابط قاعدة بيانات MongoDB المعتمد
+// بيانات الربط بقاعدة بيانات MongoDB Atlas
 const MONGO_CONFIG = {
     connectionString: "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/",
     dbName: "school_system_db"
 };
 
-// الكشف الرسمي الكامل المعتمد للبحث والاستخراج التلقائي
+// الكشف الرسمي المعتمد للكادر المدرسي
 const OFFICIAL_STAFF_LIST = [
     { id: "146193", name: "طايل منير عايد نصراوين", role: "مدير المدرسة" },
     { id: "119829", name: "محمد عوض عبد القادر الخواجا", role: "مساعد المدير" },
@@ -47,13 +47,13 @@ const OFFICIAL_STAFF_LIST = [
     { id: "200040301", name: "محمد وليد محمد الجندي", role: "معلم" }
 ];
 
-// دالة البحث واستخراج البيانات فور الضغط على زر بحث
+// دالة البحث بالرقم الوزاري عند الضغط على زر "بحث"
 function searchMinistryData() {
     const ministryIdInput = document.getElementById('ministryIdInput');
     const nameInput = document.getElementById('fullNameInput');
     const roleInput = document.getElementById('roleDisplayInput');
 
-    if (!ministryIdInput || !nameInput || !roleInput) return;
+    if (!ministryIdInput) return;
 
     const queryId = ministryIdInput.value.trim();
 
@@ -75,7 +75,7 @@ function searchMinistryData() {
     }
 }
 
-// دالة تسجيل وحفظ البيانات وتجهيز هيكل JSON لقاعدة بيانات MongoDB
+// دالة تقديم نموذج التسجيل وبناء كائن JSON المخصص لـ MongoDB
 async function handleRegistrationSubmit(e) {
     e.preventDefault();
 
@@ -107,7 +107,7 @@ async function handleRegistrationSubmit(e) {
         role = found.role;
     }
 
-    // كائن JSON المجهز للرفع والربط بـ MongoDB
+    // بناء كائن البيانات المجهز للرفع على MongoDB
     const mongoJsonPayload = {
         collection: "school_users",
         connectionUri: MONGO_CONFIG.connectionString,
@@ -126,6 +126,7 @@ async function handleRegistrationSubmit(e) {
     try {
         let allUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
         
+        // التحقق من تكرار اسم المستخدم
         const usernameExists = allUsers.some(u => u.document.username === username);
         if (usernameExists) {
             showRegAlert('اسم المستخدم هذا مستخدم مسبقاً، يرجى اختيار اسم آخر!', 'bg-amber-100 text-amber-800');
@@ -136,7 +137,7 @@ async function handleRegistrationSubmit(e) {
         localStorage.setItem('mongo_school_users', JSON.stringify(allUsers));
         localStorage.setItem('currentUserSession', JSON.stringify(mongoJsonPayload.document));
 
-        showRegAlert(`تم إنشاء الحساب وحفظ البيانات باسم (${username}) وجاهز للربط بقاعدة MongoDB!`, 'bg-emerald-100 text-emerald-800');
+        showRegAlert(`تم تسجيل الحساب بنجاح باسم المستخدم (${username}) بصفة [${role}]!`, 'bg-emerald-100 text-emerald-800');
 
         setTimeout(() => {
             if (role === 'مدير المدرسة' || role === 'مساعد المدير' || role === 'إداري') {
