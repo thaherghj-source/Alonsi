@@ -4,19 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التسجيل الشامل في البوابة المدرسية</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl overflow-hidden my-6 border border-white/10">
+        <!-- Header -->
         <div class="bg-indigo-950 text-white p-6 text-center relative">
             <div class="w-14 h-14 bg-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-yellow-500/30">
                 <i data-lucide="user-check" class="w-8 h-8 text-yellow-400"></i>
             </div>
-            <h1 class="text-xl font-black">بوابة التسجيل والاشتراك الموحدة</h1>
-            <p class="text-xs text-slate-300 mt-1">اختر صفتك ومسماك الوظيفي للمتابعة والدخول إلى لوحة التحكم الخاصة بك</p>
+            <h1 class="text-xl font-black">التسجيل وتفعيل الحساب لأول مرة</h1>
+            <p class="text-xs text-slate-300 mt-1">اختر صفتك، ثم أدخل رقمك الوزاري ليتم جلب اسمك ومسماك الوظيفي تلقائياً</p>
         </div>
 
         <div class="p-8">
@@ -24,80 +27,34 @@
 
             <form onsubmit="handleUniversalRegistration(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">حدد صفتك / المسمى الوظيفي:</label>
-                    <select id="userRoleSelect" onchange="toggleMinistryField()" class="w-full p-3 border rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <option value="معلم">معلم</option>
-                        <option value="مدير المدرسة">مدير المدرسة (أ. طايل)</option>
-                        <option value="مساعد المدير">مساعد المدير (أ. محمد الخواجا)</option>
-                        <option value="إداري">إداري (بهاء، أمين، إبراهيم، محمد الدعجة...)</option>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">نوع الحساب / الفئة:</label>
+                    <select id="userRoleSelect" onchange="toggleAccountType()" class="w-full p-3 border rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <option value="staff">كادر المدرسة (معلم / مدير / مساعد / إداري)</option>
                         <option value="طالب">طالب / ولي أمر</option>
                     </select>
                 </div>
 
-                <!-- حقل الرقم الوزاري (يظهر للعاملين فقط ويُشترط) -->
+                <!-- حقل الرقم الوزاري (للكوادر) -->
                 <div id="ministryFieldContainer">
-                    <label class="block text-sm font-bold text-slate-700 mb-1">الرقم الوزاري (إجباري للعاملين)</label>
-                    <input type="text" id="ministryIdInput" oninput="verifyMinistryId(this.value)" placeholder="أدخل رقمك الوزاري المدرج بالكشف..." class="w-full p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">الرقم الوزاري المعتمد</label>
+                    <input type="text" id="ministryIdInput" oninput="fetchStaffDetails(this.value)" placeholder="أدخل رقمك الوزاري (مثال: 171886)..." class="w-full p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none font-semibold">
+                    <p class="text-[11px] text-slate-500 mt-1">بمجرد إدخال الرقم الصحيح، سيظهر اسمك ومسماك الوظيفي أدناه تلقائياً.</p>
                 </div>
 
+                <!-- حقل الاسم التلقائي أو اسم الطالب -->
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">الاسم الكامل</label>
-                    <input type="text" id="fullNameInput" required placeholder="أدخل اسمك الثلاثي..." class="w-full p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none">
+                    <input type="text" id="fullNameInput" required readonly placeholder="يُحدد تلقائياً بالرقم الوزاري..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-indigo-950">
                 </div>
 
-                <!-- حقل الصف (يظهر للطلاب فقط) -->
+                <!-- حقل المسمى الوظيفي التلقائي (يظهر للعاملين) -->
+                <div id="roleDisplayContainer">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">المسمى الوظيفي المحدد</label>
+                    <input type="text" id="roleDisplayInput" readonly placeholder="سيظهر المسمى الوظيفي تلقائياً..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-emerald-700">
+                </div>
+
+                <!-- حقل الصف والشعبة (يظهر للطلاب فقط) -->
                 <div id="studentClassContainer" class="hidden">
                     <label class="block text-sm font-bold text-slate-700 mb-1">الصف والشعبة</label>
-                    <select id="studentClassSelect" class="w-full p-3 border rounded-xl bg-slate-50">
+                    <select id="studentClassSelect" class="w-full p-3 border rounded-xl bg-slate-50 font-semibold">
                         <option value="العاشر-أ">العاشر - أ</option>
-                        <option value="العاشر-ب">العاشر - ب</option>
-                        <option value="الحادي عشر-أ">الحادي عشر - أ</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">رقم الهاتف أو الجوال</label>
-                    <input type="tel" id="phoneInput" required placeholder="07XXXXXXXX" class="w-full p-3 border rounded-xl bg-slate-50">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">كلمة السر</label>
-                    <input type="password" id="passwordInput" required placeholder="••••••••" class="w-full p-3 border rounded-xl bg-slate-50">
-                </div>
-
-                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-3.5 rounded-xl font-bold transition shadow-lg shadow-indigo-950/30 flex items-center justify-center gap-2">
-                    <i data-lucide="save" class="w-5 h-5"></i> حفظ البيانات على MongoDB والتسجيل
-                </button>
-            </form>
-
-            <div class="mt-6 text-center border-t pt-4">
-                <a href="index.html" class="text-xs text-slate-500 hover:text-slate-800 transition">العودة إلى الصفحة الرئيسية</a>
-            </div>
-        </div>
-    </div>
-
-    <script src="js/main.js"></script>
-    <script>
-        lucide.createIcons();
-        function toggleMinistryField() {
-            const role = document.getElementById('userRoleSelect').value;
-            const ministryContainer = document.getElementById('ministryFieldContainer');
-            const studentContainer = document.getElementById('studentClassContainer');
-            const nameInput = document.getElementById('fullNameInput');
-
-            if (role === 'طالب') {
-                ministryContainer.classList.add('hidden');
-                studentContainer.classList.remove('hidden');
-                nameInput.readOnly = false;
-                nameInput.value = '';
-                nameInput.placeholder = 'أدخل اسم الطالب...';
-            } else {
-                ministryContainer.classList.remove('hidden');
-                studentContainer.classList.add('hidden');
-                nameInput.readOnly = true;
-                nameInput.placeholder = 'سيظهر الاسم تلقائياً بعد إدخال الرقم الوزاري...';
-            }
-        }
-    </script>
-</body>
-</html>
