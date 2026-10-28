@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل دخول المدير</title>
+    <title>تسجيل دخول المدير والمساعد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="css/style.css">
@@ -11,16 +11,17 @@
 <body class="bg-slate-100 font-sans min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white max-w-md w-full rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <!-- Header -->
         <div class="bg-indigo-950 text-white p-6 text-center">
             <i data-lucide="shield-check" class="w-12 h-12 mx-auto mb-2 text-yellow-400"></i>
-            <h1 class="text-xl font-bold">بوابة إدارة المدرسة</h1>
-            <p class="text-xs text-slate-300 mt-1">خاص بالمدير والمساعد - التحقق من الرقم الوزاري</p>
+            <h1 class="text-xl font-bold">لوحة تحكم الإدارة العليا</h1>
+            <p class="text-xs text-yellow-200 mt-1">مخصصة فقط لـ (المدير / مساعد المدير)</p>
         </div>
 
-        <!-- أزرار التبديل -->
+        <!-- Tabs -->
         <div class="flex border-b text-center font-bold bg-slate-50">
             <button id="adminLoginTab" onclick="switchAdminTab('login')" class="w-1/2 py-3 border-b-2 border-indigo-900 text-indigo-900">تسجيل الدخول</button>
-            <button id="adminRegisterTab" onclick="switchAdminTab('register')" class="w-1/2 py-3 text-slate-500 hover:text-indigo-900">حساب مدير جديد (لأول مرة)</button>
+            <button id="adminRegisterTab" onclick="switchAdminTab('register')" class="w-1/2 py-3 text-slate-500 hover:text-indigo-900">تفعيل/إنشاء حساب لأول مرة</button>
         </div>
 
         <div class="p-6">
@@ -30,63 +31,25 @@
             <!-- 1. نموذج تسجيل الدخول -->
             <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1">الرقم الوزاري</label>
-                    <input type="number" id="loginMinistryId" min="111111" max="3333333" required placeholder="مثال: 123456" class="w-full p-2.5 border rounded-lg focus:outline-indigo-900">
+                    <label class="block text-sm font-medium mb-1">الرقم الوزاري المعتمد</label>
+                    <input type="text" id="loginMinistryId" required placeholder="أدخل الرقم الوزاري المخصص لك" class="w-full p-2.5 border rounded-lg focus:outline-indigo-900">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">كلمة السر</label>
                     <input type="password" id="loginPassword" required class="w-full p-2.5 border rounded-lg focus:outline-indigo-900">
                 </div>
-                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-2.5 rounded-lg font-bold transition">دخول لوحة التحكم</button>
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-2.5 rounded-lg font-bold transition">دخول لوحة الإدارة</button>
             </form>
 
-            <!-- 2. نموذج تسجيل حساب مدير جديد لأول مرة -->
+            <!-- 2. نموذج تسجيل لأول مرة (التحقق بالرقم الوزاري) -->
             <form id="adminRegisterForm" onsubmit="handleAdminRegister(event)" class="space-y-4 hidden">
                 <div>
-                    <label class="block text-sm font-medium mb-1">الاسم الكامل للمدير/المساعد</label>
-                    <input type="text" id="regAdminName" required placeholder="مثال: أ. محمد أحمد" class="w-full p-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">الرقم الوزاري (بين 111111 و 3333333)</label>
-                    <input type="number" id="regAdminMinistryId" min="111111" max="3333333" required placeholder="أدخل الرقم الوزاري المعتمد" class="w-full p-2 border rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">الصفة / المسمى الوظيفي</label>
-                    <select id="regAdminRole" class="w-full p-2 border rounded-lg bg-white">
+                    <label class="block text-sm font-medium mb-1">الصفة / الصلاحية الإدارية</label>
+                    <select id="regAdminRole" required class="w-full p-2.5 border rounded-lg bg-slate-50 font-bold text-indigo-900">
                         <option value="مدير المدرسة">مدير المدرسة</option>
                         <option value="مساعد المدير">مساعد المدير</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">كلمة السر</label>
-                    <input type="password" id="regAdminPassword" required class="w-full p-2 border rounded-lg">
-                </div>
-                <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-400 text-indigo-950 py-2.5 rounded-lg font-bold transition">حفظ البيانات في MongoDB والتسجيل</button>
-            </form>
-        </div>
-    </div>
-
-    <script src="js/main.js"></script>
-    <script>
-        lucide.createIcons();
-        function switchAdminTab(type) {
-            const loginForm = document.getElementById('adminLoginForm');
-            const regForm = document.getElementById('adminRegisterForm');
-            const loginTab = document.getElementById('adminLoginTab');
-            const regTab = document.getElementById('adminRegisterTab');
-            
-            if (type === 'login') {
-                loginForm.classList.remove('hidden');
-                regForm.classList.add('hidden');
-                loginTab.classList.add('border-b-2', 'border-indigo-900', 'text-indigo-900');
-                regTab.classList.remove('border-b-2', 'border-indigo-900', 'text-indigo-900');
-            } else {
-                loginForm.classList.add('hidden');
-                regForm.classList.remove('hidden');
-                regTab.classList.add('border-b-2', 'border-indigo-900', 'text-indigo-900');
-                loginTab.classList.remove('border-b-2', 'border-indigo-900', 'text-indigo-900');
-            }
-        }
-    </script>
-</body>
-</html>
+                    <label class="block text-sm font-medium mb-1">الرقم الوزاري (يجب أن يكون بالقائمة المعتمدة)</label>
+                    <input type="text" id="regAdminMinistryId" onchange="autoFillName()" required placeholder="مثال: 171886" class="
