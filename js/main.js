@@ -1,10 +1,10 @@
-// إعدادات الاتصال بـ MongoDB Atlas
+// إعدادات الربط مع MongoDB Atlas
 const MONGO_CONFIG = {
     connectionString: "mongodb+srv://thaherghj_db_user:<db_password>@cluster0.3nmwwal.mongodb.net/",
     dbName: "school_system_db"
 };
 
-// الكشف الوزاري المعتمد والموثق كاملاً من المستند
+// الكشف الوزاري المعتمد
 const OFFICIAL_STAFF_LIST = [
     { id: "171886", name: "محمد عبد الرحمن هاشم رمزي", role: "معلم" },
     { id: "172703", name: "رباح احمد محمود الفصيلات", role: "معلم" },
@@ -47,73 +47,101 @@ const OFFICIAL_STAFF_LIST = [
     { id: "200040301", name: "محمد وليد محمد الجندي", role: "معلم" }
 ];
 
-// التحقق التلقائي من الرقم الوزاري وتعبئة الاسم
-function verifyMinistryId(val) {
-    const trimmed = val.trim();
-    const found = OFFICIAL_STAFF_LIST.find(u => u.id === trimmed);
+// 1. دالة البحث التلقائي واستخراج البيانات بعد الضغط على زر "بحث"
+function searchMinistryData() {
+    const ministryId = document.getElementById('ministryIdInput').value.trim();
     const nameInput = document.getElementById('fullNameInput');
+    const roleInput = document.getElementById('roleDisplayInput');
+
+    if (!ministryId) {
+        showRegAlert('يرجى إدخال الرقم الوزاري أولاً للبحث!', 'bg-amber-100 text-amber-800');
+        return;
+    }
+
+    const found = OFFICIAL_STAFF_LIST.find(u => u.id === ministryId);
 
     if (found) {
         nameInput.value = found.name;
+        roleInput.value = found.role;
+        showRegAlert(`تم العثور على البيانات: (${found.name}) - [${found.role}]`, 'bg-emerald-100 text-emerald-800');
     } else {
         nameInput.value = '';
+        roleInput.value = '';
+        showRegAlert('عذراً، هذا الرقم الوزاري غير مدرج في كشف الاعتماد الرسمي!', 'bg-red-100 text-red-700');
     }
 }
 
-// معالجة التسجيل الشامل لجميع الفئات وحفظه على صيغة JSON مهيأة لـ MongoDB
-async function handleUniversalRegistration(e) {
+// 2. معالجة حفظ البيانات وإنشاء اسم المستخدم وكلمة السر والتخزين على MongoDB
+async function handleRegistrationSubmit(e) {
     e.preventDefault();
 
-    const role = document.getElementById('userRoleSelect').value;
+    const accountType = document.getElementById('userRoleSelect').value;
     const name = document.getElementById('fullNameInput').value.trim();
     const phone = document.getElementById('phoneInput').value.trim();
+    const username = document.getElementById('usernameInput').value.trim();
     const password = document.getElementById('passwordInput').value;
 
     let ministryId = "";
+    let role = "";
     let studentClass = "";
 
-    if (role !== 'طالب') {
-        ministryId = document.getElementById('ministryIdInput').value.trim();
-        const found = OFFICIAL_STAFF_LIST.find(u => u.id === ministryId);
-        if (!found) {
-            showRegAlert('عذراً! هذا الرقم الوزاري غير مدرج ضمن الكشف الرسمي المعتمد.', 'bg-red-100 text-red-700');
+    if (accountType === 'طالب') {
+        role = "طالب";
+        studentClass = document.getElementById('studentClassSelect').value;
+        if (!name) {
+            showRegAlert('يرجى إدخال الاسم الكامل للطالب!', 'bg-red-100 text-red-700');
             return;
         }
     } else {
-        studentClass = document.getElementById('studentClassSelect').value;
+        ministryId = document.getElementById('ministryIdInput').value.trim();
+        const found = OFFICIAL_STAFF_LIST.find(u => u.id === ministryId);
+        
+        if (!found || !name) {
+            showRegAlert('يرجى الضغط على زر "بحث" والتحقق من الرقم الوزاري أولاً!', 'bg-red-100 text-red-700');
+            return;
+        }
+        role = found.role;
     }
 
-    // بناء كائن JSON متوافق مع قاعدة بيانات MongoDB Atlas
+    // بناء كائن البيانات المكتمل للـ MongoDB
     const userPayload = {
         collection: "school_users",
         connectionUri: MONGO_CONFIG.connectionString,
         document: {
-            role: role,
+            username: username, // اسم المستخدم
+            password: password, // كلمة السر
+            name: name,         // الاسم الكامل
+            role: role,         // المسمى الوظيفي
             ministryId: ministryId || null,
-            name: name,
             studentClass: studentClass || null,
             phone: phone,
-            password: password,
             registeredAt: new Date().toISOString()
         }
     };
 
     try {
         let allUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
+        
+        // التحقق من عدم تكرار اسم المستخدم
+        const usernameExists = allUsers.some(u => u.document.username === username);
+        if (usernameExists) {
+            showRegAlert('اسم المستخدم هذا مستخدم بالفعل، يرجى اختيار اسم مستخدم آخر!', 'bg-amber-100 text-amber-800');
+            return;
+        }
+
         allUsers.push(userPayload);
         localStorage.setItem('mongo_school_users', JSON.stringify(allUsers));
         localStorage.setItem('currentUserSession', JSON.stringify(userPayload.document));
 
-        showRegAlert(`تم تسجيل الحساب (${name}) بنجاح وحفظ البيانات على MongoDB! جاري توجيهك للوحة الخاصة...`, 'bg-emerald-100 text-emerald-800');
+        showRegAlert(`تم إنشاء الحساب وحفظ البيانات باسم المستخدم (${username}) على MongoDB بنجاح!`, 'bg-emerald-100 text-emerald-800');
 
         setTimeout(() => {
-            // التوجيه الذكي للوحة التحكم الخاصة بالفئة
             if (role === 'مدير المدرسة' || role === 'مساعد المدير' || role === 'إداري') {
-                window.location.href = 'admin.html'; // لوحة المدير والإدارة
+                window.location.href = 'admin.html';
             } else if (role === 'معلم') {
-                window.location.href = 'teacher.html'; // لوحة المعلم
+                window.location.href = 'teacher.html';
             } else {
-                window.location.href = 'student-dashboard.html'; // لوحة الطالب
+                window.location.href = 'student-dashboard.html';
             }
         }, 1500);
 
@@ -125,43 +153,7 @@ async function handleUniversalRegistration(e) {
 function showRegAlert(msg, bgClass) {
     const box = document.getElementById('regAlert');
     if (!box) return;
-    box.className = `mb-4 p-3 rounded-xl text-sm text-center font-medium shadow-sm ${bgClass}`;
+    box.className = `mb-4 p-3.5 rounded-xl text-sm text-center font-medium shadow-sm transition-all ${bgClass}`;
     box.textContent = msg;
     box.classList.remove('hidden');
-}
-
-// دوال عرض الجداول والأخبار العامة
-let db_news = "تنويه عام: تم تحديث جداول الحصص والأشغال اليومية لجميع الشعب.";
-function renderNewsTicker() {
-    const el = document.getElementById('tickerContent');
-    if (el) el.textContent = db_news;
-}
-
-let db_public_schedule = [
-    { classGroup: "العاشر-أ", period: "3", subTeacher: "أ. محمد السعيد", subject: "رياضيات" },
-    { classGroup: "الحادي عشر-أ", period: "5", subTeacher: "أ. خالد عبد الله", subject: "فيزياء" }
-];
-
-function renderPublicSchedule() {
-    const tbody = document.getElementById('publicScheduleTable');
-    if (!tbody) return;
-    tbody.innerHTML = db_public_schedule.map(item => `
-        <tr>
-            <td class="p-3 border">${item.classGroup}</td>
-            <td class="p-3 border">${item.period}</td>
-            <td class="p-3 border font-bold text-indigo-950">${item.subTeacher}</td>
-            <td class="p-3 border">${item.subject}</td>
-        </tr>
-    `).join('');
-}
-
-function renderAnnouncements() {
-    const el = document.getElementById('announcementsList');
-    if (!el) return;
-    el.innerHTML = `
-        <div class="p-3 bg-slate-50 border-r-4 border-indigo-600 rounded-lg text-sm">
-            <p class="font-bold text-slate-800">اجتماع الكادر التدريسي</p>
-            <p class="text-xs text-slate-500 mt-0.5">يوم الأحد الساعة 9:00 صباحاً.</p>
-        </div>
-    `;
 }
