@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - البوابة المدرسية</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white/95 backdrop-blur-md max-w-md w-full rounded-3xl shadow-2xl overflow-hidden my-6 border border-white/20">
+        <!-- Header -->
+        <div class="bg-indigo-950 text-white p-8 text-center relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl"></div>
+            <div class="relative z-10">
+                <div class="w-16 h-16 bg-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-yellow-500/30">
+                    <i data-lucide="log-in" class="w-10 h-10 text-yellow-400"></i>
+                </div>
+                <h1 class="text-2xl font-black tracking-tight">تسجيل الدخول للنظام</h1>
+                <p class="text-xs text-slate-300 mt-1">أدخل بيانات الحساب الذي قمت بتفعيله سابقاً</p>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <!-- Alert Message -->
+            <div id="loginAlert" class="hidden mb-5 p-3.5 rounded-xl text-sm text-center font-medium shadow-sm transition-all"></div>
+
+            <form onsubmit="handleUniversalLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
+                        <i data-lucide="user-check" class="w-4 h-4 text-indigo-600"></i> تحديد نوع الحساب
+                    </label>
+                    <select id="loginRoleType" onchange="toggleLoginType()" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50/50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <option value="staff">كادر المدرسة (مدير / مساعد / إداري / معلم)</option>
+                        <option value="student">طالب / ولي أمر</option>
+                    </select>
+                </div>
+
+                <!-- حقل الرقم الوزاري (للكوادر) -->
+                <div id="ministryInputGroup">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
+                        <i data-lucide="hash" class="w-4 h-4 text-indigo-600"></i> الرقم الوزاري المعتمد
+                    </label>
+                    <input type="text" id="loginMinistryId" placeholder="أدخل الرقم الوزاري..." class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-600 outline-none transition bg-slate-50/50">
+                </div>
+
+                <!-- حقل الاسم (للطلاب) -->
+                <div id="studentInputGroup" class="hidden">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i> اسم الطالب المسجل
+                    </label>
+                    <input type="text" id="loginStudentName" placeholder="أدخل اسم الطالب الكامل..." class="w-full p-3 border border-
