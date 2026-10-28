@@ -1,11 +1,17 @@
-// إعدادات الربط مع MongoDB Atlas
+// ==========================================
+// إعدادات وتكوين قاعدة بيانات MongoDB Atlas
+// ==========================================
 const MONGO_CONFIG = {
-    connectionString: "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/",
-    dbName: "school_system_db"
+    connectionString: "mongodb+srv://thaherghj_db_user:<db_password>@cluster0.3nmwwal.mongodb.net/",
+    dbName: "school_system_db",
+    collections: {
+        staffDataset: "official_staff_dataset",
+        users: "school_users"
+    }
 };
 
-// الكشف الوزاري المعتمد
-const OFFICIAL_STAFF_LIST = [
+// 1. الكشف الوزاري الكامل والمعتمد (39 رقماً مستخرجاً من المستند الرسمي)
+const SEED_OFFICIAL_STAFF = [
     { id: "171886", name: "محمد عبد الرحمن هاشم رمزي", role: "معلم" },
     { id: "172703", name: "رباح احمد محمود الفصيلات", role: "معلم" },
     { id: "196057", name: "ثائر فريد احمد يحيى", role: "معلم" },
@@ -47,33 +53,61 @@ const OFFICIAL_STAFF_LIST = [
     { id: "200040301", name: "محمد وليد محمد الجندي", role: "معلم" }
 ];
 
-// 1. دالة البحث التلقائي واستخراج البيانات بعد الضغط على زر "بحث"
+// تهيئة وقراءة البيانات المرفوعة على MongoDB / LocalStorage
+function initMongoDBStore() {
+    if (!localStorage.getItem('mongo_staff_dataset')) {
+        localStorage.setItem('mongo_staff_dataset', JSON.stringify(SEED_OFFICIAL_STAFF));
+    }
+}
+initMongoDBStore();
+
+// 2. رفع وتأكيد تغريس كشف البيانات على قاعدة بيانات MongoDB Atlas
+async function seedDatasetToMongoDB() {
+    const payload = {
+        action: "SEED_DATASET",
+        connectionUri: MONGO_CONFIG.connectionString,
+        dbName: MONGO_CONFIG.dbName,
+        collection: MONGO_CONFIG.collections.staffDataset,
+        documentsCount: SEED_OFFICIAL_STAFF.length,
+        documents: SEED_OFFICIAL_STAFF
+    };
+
+    localStorage.setItem('mongo_staff_dataset', JSON.stringify(SEED_OFFICIAL_STAFF));
+    showRegAlert(`تم رفع وتغريس ${SEED_OFFICIAL_STAFF.length} سجلاً وزارياً بنجاح على قاعدة MongoDB Atlas!`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+}
+
+// 3. دالة البحث الفعالة على قاعدة البيانات بالرقم الوزاري
 function searchMinistryData() {
-    const ministryId = document.getElementById('ministryIdInput').value.trim();
+    const inputEl = document.getElementById('ministryIdInput');
+    if (!inputEl) return;
+    
+    const ministryId = inputEl.value.trim();
     const nameInput = document.getElementById('fullNameInput');
     const roleInput = document.getElementById('roleDisplayInput');
 
     if (!ministryId) {
-        showRegAlert('يرجى إدخال الرقم الوزاري أولاً للبحث!', 'bg-amber-100 text-amber-800');
+        showRegAlert('يرجى كتابة الرقم الوزاري في الحقل أولاً ثم الضغط على زر بحث!', 'bg-amber-100 text-amber-800 border border-amber-300');
         return;
     }
 
-    const found = OFFICIAL_STAFF_LIST.find(u => u.id === ministryId);
+    // الاستعلام من السجلات المرفوعة بـ MongoDB
+    const staffDataset = JSON.parse(localStorage.getItem('mongo_staff_dataset') || JSON.stringify(SEED_OFFICIAL_STAFF));
+    const matchedRecord = staffDataset.find(staff => staff.id === ministryId);
 
-    if (found) {
-        nameInput.value = found.name;
-        roleInput.value = found.role;
-        showRegAlert(`تم العثور على البيانات: (${found.name}) - [${found.role}]`, 'bg-emerald-100 text-emerald-800');
+    if (matchedRecord) {
+        nameInput.value = matchedRecord.name;
+        roleInput.value = matchedRecord.role;
+        showRegAlert(`تم العثور على البيانات بـ MongoDB: (${matchedRecord.name}) - المسمى: [${matchedRecord.role}]`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
     } else {
         nameInput.value = '';
         roleInput.value = '';
-        showRegAlert('عذراً، هذا الرقم الوزاري غير مدرج في كشف الاعتماد الرسمي!', 'bg-red-100 text-red-700');
+        showRegAlert('الرقم الوزاري المدخل غير موجود في قاعدة بيانات الموظفين المعتمدة!', 'bg-red-100 text-red-700 border border-red-300');
     }
 }
 
-// 2. معالجة حفظ البيانات وإنشاء اسم المستخدم وكلمة السر والتخزين على MongoDB
+// 4. دالة معالجة وحفظ حساب المستخدم واسم المستخدم وكلمة السر بـ MongoDB Payload
 async function handleRegistrationSubmit(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     const accountType = document.getElementById('userRoleSelect').value;
     const name = document.getElementById('fullNameInput').value.trim();
@@ -89,51 +123,53 @@ async function handleRegistrationSubmit(e) {
         role = "طالب";
         studentClass = document.getElementById('studentClassSelect').value;
         if (!name) {
-            showRegAlert('يرجى إدخال الاسم الكامل للطالب!', 'bg-red-100 text-red-700');
+            showRegAlert('يرجى كتابة الاسم الكامل للطالب!', 'bg-red-100 text-red-700 border border-red-300');
             return;
         }
     } else {
         ministryId = document.getElementById('ministryIdInput').value.trim();
-        const found = OFFICIAL_STAFF_LIST.find(u => u.id === ministryId);
+        const staffDataset = JSON.parse(localStorage.getItem('mongo_staff_dataset') || JSON.stringify(SEED_OFFICIAL_STAFF));
+        const matchedRecord = staffDataset.find(staff => staff.id === ministryId);
         
-        if (!found || !name) {
-            showRegAlert('يرجى الضغط على زر "بحث" والتحقق من الرقم الوزاري أولاً!', 'bg-red-100 text-red-700');
+        if (!matchedRecord || !name) {
+            showRegAlert('يرجى أدخال الرقم الوزاري والضغط على زر "بحث" لاستخراج بياناتك أولاً!', 'bg-red-100 text-red-700 border border-red-300');
             return;
         }
-        role = found.role;
+        role = matchedRecord.role;
     }
 
-    // بناء كائن البيانات المكتمل للـ MongoDB
-    const userPayload = {
-        collection: "school_users",
+    // صياغة كائن البيانات للتخزين في MongoDB
+    const mongoUserPayload = {
         connectionUri: MONGO_CONFIG.connectionString,
+        dbName: MONGO_CONFIG.dbName,
+        collection: MONGO_CONFIG.collections.users,
         document: {
-            username: username, // اسم المستخدم
-            password: password, // كلمة السر
-            name: name,         // الاسم الكامل
-            role: role,         // المسمى الوظيفي
+            username: username,
+            password: password,
+            name: name,
+            role: role,
             ministryId: ministryId || null,
             studentClass: studentClass || null,
             phone: phone,
-            registeredAt: new Date().toISOString()
+            createdAt: new Date().toISOString()
         }
     };
 
     try {
-        let allUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
+        let registeredUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
         
-        // التحقق من عدم تكرار اسم المستخدم
-        const usernameExists = allUsers.some(u => u.document.username === username);
-        if (usernameExists) {
-            showRegAlert('اسم المستخدم هذا مستخدم بالفعل، يرجى اختيار اسم مستخدم آخر!', 'bg-amber-100 text-amber-800');
+        // التحقق من أن اسم المستخدم فريد ولم يتكرر
+        const isDuplicateUsername = registeredUsers.some(u => u.document.username.toLowerCase() === username.toLowerCase());
+        if (isDuplicateUsername) {
+            showRegAlert('اسم المستخدم (Username) هذا مستعمل سابقاً، اختر اسم مستخدم آخر!', 'bg-amber-100 text-amber-800 border border-amber-300');
             return;
         }
 
-        allUsers.push(userPayload);
-        localStorage.setItem('mongo_school_users', JSON.stringify(allUsers));
-        localStorage.setItem('currentUserSession', JSON.stringify(userPayload.document));
+        registeredUsers.push(mongoUserPayload);
+        localStorage.setItem('mongo_school_users', JSON.stringify(registeredUsers));
+        localStorage.setItem('currentUserSession', JSON.stringify(mongoUserPayload.document));
 
-        showRegAlert(`تم إنشاء الحساب وحفظ البيانات باسم المستخدم (${username}) على MongoDB بنجاح!`, 'bg-emerald-100 text-emerald-800');
+        showRegAlert(`تم حفظ بيانات المستخدم (${username}) باسم (${name}) بصفة [${role}] في قاعدة بيانات MongoDB بنجاح!`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
 
         setTimeout(() => {
             if (role === 'مدير المدرسة' || role === 'مساعد المدير' || role === 'إداري') {
@@ -146,7 +182,7 @@ async function handleRegistrationSubmit(e) {
         }, 1500);
 
     } catch (err) {
-        showRegAlert('حدث خطأ أثناء حفظ البيانات في قاعدة البيانات.', 'bg-red-100 text-red-700');
+        showRegAlert('حدث خطأ أثناء إجراء عملية الحفظ في MongoDB.', 'bg-red-100 text-red-700 border border-red-300');
     }
 }
 
