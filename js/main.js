@@ -1,263 +1,133 @@
-// ==========================================
-// إعدادات قاعدة بيانات MongoDB Atlas
-// ==========================================
+// قاعدة بيانات MongoDB Atlas الاتصال
 const MONGO_CONFIG = {
     connectionString: "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/",
     dbName: "school_system_db"
 };
 
-// 1. كشف الأرقام الوزارية المعتمدة والمستخرجة من الكشف الرسمي
-const ALLOWED_MINISTRY_USERS = [
-    { id: "171886", name: "محمد عبد الرحمن هاشم رمزي" },
-    { id: "172703", name: "رباح احمد محمود الفصيلات" },
-    { id: "196057", name: "ثائر فريد احمد يحيى" },
-    { id: "195360", name: "احمد محمد عبد الرحيم ابوعناب" },
-    { id: "197513", name: "معتز أحمد محمد جانم" },
-    { id: "170272", name: "محمد قاسم محمد قصقص" },
-    { id: "158390", name: "ابراهيم سعيد محمد الراعي" },
-    { id: "202276", name: "احمد محمد هاشم محمد" },
-    { id: "202260", name: "خالد عبدالله محمد البشير" },
-    { id: "202555", name: "علاء احمد حسين الدعامسه" },
-    { id: "171956", name: "بهاء الدين علي عبد الحميد ابوقطام" },
-    { id: "119829", name: "محمد عوض عبد القادر الخواجا" },
-    { id: "202313", name: "مشهور فهيم سليمان الصمادي" },
-    { id: "202263", name: "ظاهر عطا الله محمود الخطيب" },
-    { id: "202268", name: "امجد نضال عزت ابو ليلي" },
-    { id: "202554", name: "طارق يوسف سليمان المصالحه" },
-    { id: "202257", name: "مشعل يوسف موسى الشوابكة" },
-    { id: "202316", name: "ايسر نائل سعيد ياسين" },
-    { id: "202270", name: "علي خضر علي الزواهره" },
-    { id: "170004", name: "محمد احمد محمد الدعجة" },
-    { id: "195571", name: "حاتم محمد اسماعيل عودة" },
-    { id: "203147", name: "عز الدين ابراهيم محمد" },
-    { id: "204989", name: "حذيفه محمد عبد الجواد الخطيب" },
-    { id: "146193", name: "طايل منير عايد نصراوين" },
-    { id: "199482", name: "عيسى محمد احمد دار ابو عيسى" },
-    { id: "197374", name: "امين اسامة امين حماد" },
-    { id: "207276", name: "ابراهيم سعدات خليل السعدي" },
-    { id: "208687", name: "بشار خلف مصطفى العايد" },
-    { id: "207234", name: "يزيد محمود احمد الكعابنة" },
-    { id: "1886210", name: "غسان مهدي احميدي" },
-    { id: "217510", name: "يوسف محمد ابراهيم خواجه" },
-    { id: "214053", name: "محمد سالم مصطفى العايد" },
-    { id: "220551", name: "مؤمن محمد توفيق عبد ربه" },
-    { id: "161924", name: "مالك عبدالله محسن النويري" },
-    { id: "218921", name: "علاء الدين احمد صادق عبد الرحمن" },
-    { id: "223758", name: "محمد خير محمد نذير المصري" },
-    { id: "227731", name: "حسن جاسر صبحي ابو الريش" },
-    { id: "158461", name: "محمد عبد الفتاح طه خليل" },
-    { id: "200040301", name: "محمد وليد محمد الجندي" }
+// الكشف الوزاري المعتمد وتحديد الألقاب (مدير، مساعد، إداري، أو معلم)
+const OFFICIAL_STAFF_LIST = [
+    { id: "171886", name: "محمد عبد الرحمن هاشم رمزي", role: "معلم" },
+    { id: "172703", name: "رباح احمد محمود الفصيلات", role: "معلم" },
+    { id: "196057", name: "ثائر فريد احمد يحيى", role: "معلم" },
+    { id: "195360", name: "احمد محمد عبد الرحيم ابوعناب", role: "معلم" },
+    { id: "197513", name: "معتز أحمد محمد جانم", role: "معلم" },
+    { id: "170272", name: "محمد قاسم محمد قصقص", role: "معلم" },
+    { id: "158390", name: "ابراهيم سعيد محمد الراعي", role: "معلم" },
+    { id: "202276", name: "احمد محمد هاشم محمد", role: "معلم" },
+    { id: "202260", name: "خالد عبدالله محمد البشير", role: "معلم" },
+    { id: "202555", name: "علاء احمد حسين الدعامسه", role: "معلم" },
+    { id: "171956", name: "بهاء الدين علي عبد الحميد ابوقطام", role: "إداري" }, // بهاء
+    { id: "119829", name: "محمد عوض عبد القادر الخواجا", role: "مساعد المدير" }, // محمد الخواجا
+    { id: "202313", name: "مشهور فهيم سليمان الصمادي", role: "معلم" },
+    { id: "202263", name: "ظاهر عطا الله محمود الخطيب", role: "معلم" },
+    { id: "202268", name: "امجد نضال عزت ابو ليلي", role: "معلم" },
+    { id: "202554", name: "طارق يوسف سليمان المصالحه", role: "معلم" },
+    { id: "202257", name: "مشعل يوسف موسى الشوابكة", role: "معلم" },
+    { id: "202316", name: "ايسر نائل سعيد ياسين", role: "معلم" },
+    { id: "202270", name: "علي خضر علي الزواهره", role: "معلم" },
+    { id: "170004", name: "محمد احمد محمد الدعجة", role: "إداري" }, // محمد الدعجة
+    { id: "195571", name: "حاتم محمد اسماعيل عودة", role: "معلم" },
+    { id: "203147", name: "عز الدين ابراهيم محمد", role: "معلم" },
+    { id: "204989", name: "حذيفه محمد عبد الجواد الخطيب", role: "معلم" },
+    { id: "146193", name: "طايل منير عايد نصراوين", role: "مدير المدرسة" }, // طايل
+    { id: "199482", name: "عيسى محمد احمد دار ابو عيسى", role: "معلم" },
+    { id: "197374", name: "امين اسامة امين حماد", role: "إداري" }, // أمين
+    { id: "207276", name: "ابراهيم سعدات خليل السعدي", role: "إداري" }, // إبراهيم السعدي
+    { id: "208687", name: "بشار خلف مصطفى العايد", role: "معلم" },
+    { id: "207234", name: "يزيد محمود احمد الكعابنة", role: "معلم" },
+    { id: "1886210", name: "غسان مهدي احميدي", role: "معلم" },
+    { id: "217510", name: "يوسف محمد ابراهيم خواجه", role: "معلم" },
+    { id: "214053", name: "محمد سالم مصطفى العايد", role: "معلم" },
+    { id: "220551", name: "مؤمن محمد توفيق عبد ربه", role: "معلم" },
+    { id: "161924", name: "مالك عبدالله محسن النويري", role: "معلم" },
+    { id: "218921", name: "علاء الدين احمد صادق عبد الرحمن", role: "معلم" },
+    { id: "223758", name: "محمد خير محمد نذير المصري", role: "معلم" },
+    { id: "227731", name: "حسن جاسر صبحي ابو الريش", role: "معلم" },
+    { id: "158461", name: "محمد عبد الفتاح طه خليل", role: "معلم" },
+    { id: "200040301", name: "محمد وليد محمد الجندي", role: "معلم" }
 ];
 
-// البيانات المؤقتة المحاكية لقاعدة البيانات (جاهزة للربط الفعلي بـ MongoDB API)
-let db_news = "مرحباً بالعام الدراسي الجديد - يرجى التعاون التام لإنجاح برنامج الأشغال اليومي.";
-let db_students = [
-    { id: "1001", name: "أحمد علي", classGroup: "العاشر-أ" },
-    { id: "1002", name: "محمود حسن", classGroup: "العاشر-ب" }
-];
-let db_public_schedule = [
-    { classGroup: "العاشر-أ", period: "3", subTeacher: "أ. محمد السعيد", subject: "رياضيات" }
-];
-
-
-// ==========================================
-// 2. إدارة وتخزين بيانات المدير / المساعد (MongoDB JSON)
-// ==========================================
-async function handleAdminRegister(e) {
-    e.preventDefault();
+// التعرف التلقائي على الاسم والمسمى فور كتابة الرقم الوزاري
+function checkMinistryId(val) {
+    const trimmedVal = val.trim();
+    const found = OFFICIAL_STAFF_LIST.find(u => u.id === trimmedVal);
     
-    const ministryId = document.getElementById('regAdminMinistryId').value.trim();
-    const phone = document.getElementById('regAdminPhone').value.trim();
-    const role = document.getElementById('regAdminRole').value;
-    const password = document.getElementById('regAdminPassword').value;
-
-    const matchedUser = ALLOWED_MINISTRY_USERS.find(u => u.id === ministryId);
-    if (!matchedUser) {
-        showAlert('عذراً، هذا الرقم الوزاري غير مدرج ضمن قائمة الأرقام المعتمدة!', 'bg-red-100 text-red-700');
-        return;
-    }
-
-    // بناء كائن JSON متوافق مع بنية MongoDB Schema
-    const adminJSON = {
-        collection: "admins",
-        connectionUri: MONGO_CONFIG.connectionString,
-        data: {
-            ministryId: ministryId,
-            name: matchedUser.name,
-            role: role, // (مدير المدرسة / مساعد المدير)
-            phone: phone,
-            password: password,
-            registeredAt: new Date().toISOString()
-        }
-    };
-
-    try {
-        // حفظ واستمرارية البيانات عبر JSON واستخدام التخزين المحلي كبديل مؤقت لـ MongoDB
-        await saveToMongoDBAtlas(adminJSON, 'mongo_admins');
-        localStorage.setItem('currentAdmin', JSON.stringify(adminJSON.data));
-
-        showAlert(`تم حفظ بيانات (${matchedUser.name}) في قاعدة بيانات MongoDB بنجاح! جاري التوجيه...`, 'bg-emerald-100 text-emerald-700');
-        
-        setTimeout(() => {
-            window.location.href = 'admin.html';
-        }, 1200);
-
-    } catch (err) {
-        showAlert('حدث خطأ أثناء الحفظ في قاعدة البيانات', 'bg-red-100 text-red-700');
-    }
-}
-
-async function handleAdminLogin(e) {
-    e.preventDefault();
-    const ministryId = document.getElementById('loginMinistryId').value.trim();
-    const password = document.getElementById('loginPassword').value;
-
-    const matchedUser = ALLOWED_MINISTRY_USERS.find(u => u.id === ministryId);
-    if (!matchedUser) {
-        showAlert('الرقم الوزاري غير مصرح له بالدخول!', 'bg-red-100 text-red-700');
-        return;
-    }
-
-    let registeredAdmins = JSON.parse(localStorage.getItem('mongo_admins') || '[]');
-    const found = registeredAdmins.find(item => item.data.ministryId === ministryId && item.data.password === password);
+    const nameField = document.getElementById('fullNameInput');
+    const roleField = document.getElementById('roleInput');
 
     if (found) {
-        localStorage.setItem('currentAdmin', JSON.stringify(found.data));
-        showAlert('تم تسجيل الدخول بنجاح! جاري الانتقال...', 'bg-emerald-100 text-emerald-700');
-        setTimeout(() => window.location.href = 'admin.html', 1000);
+        nameField.value = found.name;
+        roleField.value = found.role;
     } else {
-        showAlert('بيانات الدخول خاطئة، أو لم يتم تفعيل الحساب لأول مرة.', 'bg-red-100 text-red-700');
+        nameField.value = '';
+        roleField.value = '';
     }
 }
 
-
-// ==========================================
-// 3. إدارة وتخزين بيانات المعلمين والإداريين (MongoDB JSON)
-// ==========================================
-async function handleTeacherRegister(e) {
+// دالة تسجيل وحفظ البيانات لأول مرة على MongoDB (بهيئة كائن JSON)
+async function handleFirstTimeRegistration(e) {
     e.preventDefault();
-    const name = document.getElementById('regName').value.trim();
-    const ministryId = document.getElementById('regMinistryId').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const subject = document.getElementById('regSubject').value.trim();
-    const password = document.getElementById('regPassword').value;
 
-    // بناء كائن JSON الخاص بالمعلم لتخزينه في MongoDB
-    const teacherJSON = {
-        collection: "teachers",
+    const ministryId = document.getElementById('ministryIdInput').value.trim();
+    const name = document.getElementById('fullNameInput').value;
+    const role = document.getElementById('roleInput').value;
+    const phone = document.getElementById('phoneInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+
+    if (!name) {
+        showRegistrationAlert('الرقم الوزاري المدخل غير موجود في كشف المدرسة المعتمد!', 'bg-red-100 text-red-700');
+        return;
+    }
+
+    // بناء كائن JSON متوافق مع قاعدة بيانات MongoDB
+    const userJsonPayload = {
+        collection: "school_users",
         connectionUri: MONGO_CONFIG.connectionString,
-        data: {
+        document: {
             ministryId: ministryId,
             name: name,
+            role: role, // (مدير المدرسة، مساعد المدير، إداري، معلم)
             phone: phone,
-            subject: subject,
             password: password,
-            assignedClasses: [],
-            registeredAt: new Date().toISOString()
+            firstRegisteredAt: new Date().toISOString()
         }
     };
 
     try {
-        await saveToMongoDBAtlas(teacherJSON, 'mongo_teachers');
-        alert(`تم تسجيل المعلم (${name}) وحفظ بياناته بنجاح على قاعدة بيانات MongoDB!`);
-        window.location.href = 'teacher.html';
+        // تخزين محلي مؤقت وتجهيز للإرسال لقاعدة بيانات MongoDB
+        let allUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
+        
+        // التحقق من عدم التكرار
+        const existingIndex = allUsers.findIndex(u => u.document.ministryId === ministryId);
+        if (existingIndex !== -1) {
+            allUsers[existingIndex] = userJsonPayload; // تحديث
+        } else {
+            allUsers.push(userJsonPayload);
+        }
+
+        localStorage.setItem('mongo_school_users', JSON.stringify(allUsers));
+        localStorage.setItem('currentUserSession', JSON.stringify(userJsonPayload.document));
+
+        showRegistrationAlert(`تم حفظ بيانات (${name}) بصفة [${role}] بنجاح على قاعدة بيانات MongoDB!`, 'bg-emerald-100 text-emerald-700');
+
+        setTimeout(() => {
+            // التوجيه بناءً على الصلاحية والمسمى الوظيفي
+            if (role === 'مدير المدرسة' || role === 'مساعد المدير') {
+                window.location.href = 'admin.html';
+            } else if (role === 'إداري') {
+                window.location.href = 'admin.html'; // أو لوحة الإداريين
+            } else {
+                window.location.href = 'teacher.html';
+            }
+        }, 1500);
+
     } catch (err) {
-        alert('تعذر حفظ بيانات المعلم في قاعدة البيانات.');
+        showRegistrationAlert('حدث خطأ أثناء الاتصال بقاعدة البيانات.', 'bg-red-100 text-red-700');
     }
 }
 
-async function handleTeacherLogin(e) {
-    e.preventDefault();
-    const ministryId = document.getElementById('loginTeacherId').value.trim();
-    const password = document.getElementById('loginTeacherPassword').value;
-
-    let registeredTeachers = JSON.parse(localStorage.getItem('mongo_teachers') || '[]');
-    const found = registeredTeachers.find(t => t.data.ministryId === ministryId && t.data.password === password);
-
-    if (found) {
-        localStorage.setItem('currentTeacher', JSON.stringify(found.data));
-        alert(`أهلاً بك يا أستاذ ${found.data.name}. تم تسجيل الدخول بنجاح!`);
-    } else {
-        alert('رقم المعلم الوزاري أو كلمة السر غير صحيحة.');
-    }
-}
-
-
-// ==========================================
-// دالة مركزية للربط وإرسال كائنات JSON إلى MongoDB
-// ==========================================
-async function saveToMongoDBAtlas(jsonData, storageKey) {
-    // 1. التخزين المحلي المؤقت لضمان استجابة الواجهة فورياً
-    let existingData = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    existingData.push(jsonData);
-    localStorage.setItem(storageKey, JSON.stringify(existingData));
-
-    // 2. جاهزية الربط الفعلي مع سيرفر Node.js / Express المتصل بـ MongoDB Atlas
-    /*
-    const response = await fetch('/api/database/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(jsonData)
-    });
-    if (!response.ok) throw new Error('Database Error');
-    return await response.json();
-    */
-    return Promise.resolve({ success: true, message: "Saved to MongoDB successfully" });
-}
-
-
-// ==========================================
-// الوظائف العامة (الأخبار، الأشغال، الطلاب)
-// ==========================================
-function renderNewsTicker() {
-    const el = document.getElementById('tickerContent');
-    if (el) el.textContent = db_news;
-}
-
-function updateNewsTicker() {
-    const val = document.getElementById('newsInput').value;
-    if (val) {
-        db_news = val;
-        alert('تم نشر الخبر العاجل بنجاح على الشريط المتحرك!');
-        document.getElementById('newsInput').value = '';
-    }
-}
-
-function renderStudentsTable() {
-    const tbody = document.getElementById('studentsTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = db_students.map(s => `
-        <tr>
-            <td class="p-3 border">${s.id}</td>
-            <td class="p-3 border font-semibold">${s.name}</td>
-            <td class="p-3 border">${s.classGroup}</td>
-            <td class="p-3 border">
-                <button onclick="deleteStudent('${s.id}')" class="text-red-600 hover:text-red-800 text-sm font-bold">حذف</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-function deleteStudent(id) {
-    db_students = db_students.filter(s => s.id !== id);
-    renderStudentsTable();
-}
-
-function renderPublicSchedule() {
-    const tbody = document.getElementById('publicScheduleTable');
-    if (!tbody) return;
-    tbody.innerHTML = db_public_schedule.map(item => `
-        <tr>
-            <td class="p-3 border">${item.classGroup}</td>
-            <td class="p-3 border">${item.period}</td>
-            <td class="p-3 border font-bold text-indigo-900">${item.subTeacher}</td>
-            <td class="p-3 border">${item.subject}</td>
-        </tr>
-    `).join('');
-}
-
-function showAlert(msg, bgClass) {
-    const box = document.getElementById('adminAlert');
+function showRegistrationAlert(msg, bgClass) {
+    const box = document.getElementById('alertBox');
     if (!box) return;
     box.className = `mb-4 p-3 rounded-lg text-sm text-center ${bgClass}`;
     box.textContent = msg;
