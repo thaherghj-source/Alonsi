@@ -3,56 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم المدير</title>
+    <title>لوحة تحكم الإدارة العليا</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- SheetJS لقراءة وتصدير ملفات Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-slate-100 font-sans min-h-screen">
 
-    <nav class="bg-indigo-950 text-white p-4 shadow-md flex justify-between items-center">
+    <nav class="bg-indigo-950 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <i data-lucide="shield-check" class="text-yellow-400"></i>
-            <span class="font-bold text-xl">لوحة إدارة المدرسة - المدير والمساعد</span>
+            <i data-lucide="shield-check" class="text-yellow-400 w-6 h-6"></i>
+            <span class="font-bold text-lg">لوحة الإدارة العليا (المدير والمساعد والإداريون)</span>
         </div>
-        <a href="index.html" class="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded transition">العودة للرئيسية</a>
+        <div class="flex items-center gap-4">
+            <span id="adminNameDisplay" class="text-xs text-yellow-300 bg-indigo-900 px-3 py-1.5 rounded-lg"></span>
+            <a href="index.html" class="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg transition">خروج</a>
+        </div>
     </nav>
 
     <div class="max-w-7xl mx-auto p-6 space-y-8">
         
-        <!-- قسم الأخبار العاجلة -->
+        <!-- إدارة شريط الأخبار العاجلة -->
         <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold text-indigo-900 mb-4 flex items-center gap-2">
-                <i data-lucide="radio"></i> تحديث شريط الأخبار العاجلة (الظاهر للجميع)
+            <h2 class="text-lg font-bold text-indigo-950 mb-4 flex items-center gap-2">
+                <i data-lucide="radio" class="text-red-600"></i> إرسال تنبيه أو أخبار عاجلة (تظهر لجميع الزوار والطلاب)
             </h2>
             <div class="flex gap-3">
-                <input type="text" id="newsInput" placeholder="أدخل التنبيه أو التعليمات الجديدة هنا..." class="flex-1 p-2.5 border rounded-lg focus:outline-indigo-500">
-                <button onclick="updateNewsTicker()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2">
-                    <i data-lucide="send"></i> نشر عاجل
+                <input type="text" id="newsInput" placeholder="أدخل التعليمات أو الأخبار الجديدة هنا..." class="flex-1 p-3 border rounded-xl focus:outline-indigo-600 bg-slate-50">
+                <button onclick="updateNewsTicker()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition shadow-md">
+                    <i data-lucide="send" class="w-4 h-4"></i> نشر فوري
                 </button>
             </div>
         </section>
 
-        <!-- قسم محرك برنامج الأشغال والتعويض اليومي -->
+        <!-- برنامج الأشغال اليومي الذكي -->
         <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold text-indigo-900 mb-4 flex items-center gap-2">
-                <i data-lucide="cpu"></i> محرك تعويض الحصص والأشغال اليومي الذكي
+            <h2 class="text-lg font-bold text-indigo-950 mb-4 flex items-center gap-2">
+                <i data-lucide="cpu" class="text-indigo-600"></i> نظام تعويض الحصص والأشغال اليومي الذكي
             </h2>
             
-            <div class="grid md:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-xl">
+            <div class="grid md:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-xl border">
                 <div>
-                    <label class="block text-sm font-medium mb-1">الصف والشعبة</label>
-                    <select id="subClassSelect" class="w-full p-2 border rounded-lg bg-white">
+                    <label class="block text-sm font-semibold mb-1">الصف والشعبة</label>
+                    <select id="subClassSelect" class="w-full p-2.5 border rounded-lg bg-white">
                         <option value="العاشر-أ">العاشر - أ</option>
                         <option value="العاشر-ب">العاشر - ب</option>
                         <option value="الحادي عشر-أ">الحادي عشر - أ</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">رقم الحصة المطلوب تعويضها</label>
-                    <select id="subPeriodSelect" class="w-full p-2 border rounded-lg bg-white">
+                    <label class="block text-sm font-semibold mb-1">الحصة المطلوب تعويضها</label>
+                    <select id="subPeriodSelect" class="w-full p-2.5 border rounded-lg bg-white">
                         <option value="1">الحصة الأولى</option>
                         <option value="2">الحصة الثانية</option>
                         <option value="3">الحصة الثالثة</option>
@@ -61,70 +63,16 @@
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button onclick="findSubstitutes()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-bold">
-                        بحث عن البدلاء المتاحين
+                    <button onclick="findSubstitutes()" class="w-full bg-indigo-900 hover:bg-indigo-950 text-white py-2.5 rounded-lg font-bold transition">
+                        استعراض البدلاء المقترحين
                     </button>
                 </div>
             </div>
 
-            <!-- نتائج الاقتراحات الذكية -->
+            <!-- نتائج التعويض -->
             <div id="substitutionResults" class="hidden space-y-4">
-                <h3 class="font-bold text-slate-700">الخيارات المتاحة للتعويض:</h3>
+                <h3 class="font-bold text-slate-700">الخيارات والخيارات المتاحة للتعويض:</h3>
                 <div class="grid md:grid-cols-2 gap-4">
-                    <!-- حسب المعلمين المتفرغين لنفس الصف -->
-                    <div class="border p-4 rounded-xl bg-emerald-50 border-emerald-200">
-                        <h4 class="font-bold text-emerald-900 mb-2">1. المعلمون المتفرغون (يدرسون هذا الصف):</h4>
-                        <div id="classTeachersList" class="space-y-2 text-sm"></div>
-                    </div>
-                    <!-- حسب تبديل/تحريك الحصص -->
-                    <div class="border p-4 rounded-xl bg-amber-50 border-amber-200">
-                        <h4 class="font-bold text-amber-900 mb-2">2. امكانية التحريك بدل (الحصة 6 / 7):</h4>
-                        <div id="swapTeachersList" class="space-y-2 text-sm"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- قسم إدارة الطلاب واستيراد Excel -->
-        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-                <h2 class="text-lg font-bold text-indigo-900 flex items-center gap-2">
-                    <i data-lucide="users"></i> إدارة الطلاب والصفوف
-                </h2>
-                <div class="flex gap-2">
-                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer flex items-center gap-2">
-                        <i data-lucide="file-spreadsheet"></i> رفع ملف الطلاب (Excel)
-                        <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
-                    </label>
-                    <button onclick="openAddStudentModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1">
-                        <i data-lucide="plus"></i> إضافة طالب
-                    </button>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-right border-collapse">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-700 text-sm">
-                            <th class="p-3 border">الرقم الوطني/التعريفي</th>
-                            <th class="p-3 border">اسم الطالب</th>
-                            <th class="p-3 border">الصف والشعبة</th>
-                            <th class="p-3 border">الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentsTableBody">
-                        <!-- يُملأ بديناميكية عبر JS -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-    </div>
-
-    <script src="js/main.js"></script>
-    <script>
-        lucide.createIcons();
-        document.addEventListener('DOMContentLoaded', renderStudentsTable);
-    </script>
-</body>
-</html>
+                    <div class="border p-4 rounded-xl bg-emerald-50/60 border-emerald-200">
+                        <h4 class="font-bold text-emerald-900 mb-2">1. المعلمون المتفرغون (يدرسون نفس الصف):</h4>
+                        <div id="classTeachersList" class="space-y-2 text-sm">
