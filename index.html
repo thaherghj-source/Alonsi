@@ -3,92 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة مدرسة النموذج الحديثة</title>
+    <title>البوابة الإلكترونية - مدرسة النموذج الحديثة</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col selection:bg-yellow-400 selection:text-indigo-950">
 
-    <!-- Navbar -->
-    <nav class="bg-indigo-950 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
+    <!-- Navbar / الشريط العلوي -->
+    <nav class="bg-indigo-950 text-white shadow-xl sticky top-0 z-50 border-b border-indigo-900/50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+            <!-- الشعار واستعراض اسم المدرسة -->
             <div class="flex items-center space-x-3 space-x-reverse">
-                <i data-lucide="school" class="w-8 h-8 text-yellow-400"></i>
-                <span class="text-xl font-extrabold tracking-tight">مدرسة النموذج الحديثة</span>
+                <div class="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center border border-yellow-500/30">
+                    <i data-lucide="school" class="w-6 h-6 text-yellow-400"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-black tracking-wide block leading-tight">مدرسة النموذج الحديثة</span>
+                    <span class="text-[10px] text-yellow-300/80 font-medium block">البوابة التعليمية الموحدة</span>
+                </div>
             </div>
-            <div>
-                <a href="register.html" class="px-4 py-2 rounded-xl bg-yellow-500 text-indigo-950 font-bold hover:bg-yellow-400 transition shadow-md flex items-center gap-2">
-                    <i data-lucide="user-plus" class="w-4 h-4"></i> التسجيل / دخول الموقع
+
+            <!-- أزرار الدخول والتسجيل الموحدة -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="login.html" class="px-4 py-2 rounded-xl bg-indigo-900 hover:bg-indigo-800 text-white font-bold text-sm transition flex items-center gap-2 border border-indigo-700/50 shadow-sm">
+                    <i data-lucide="log-in" class="w-4 h-4 text-yellow-400"></i> تسجيل الدخول
+                </a>
+                <a href="register.html" class="px-4 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-indigo-950 font-black text-sm transition shadow-md shadow-yellow-500/10 flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> حساب جديد
                 </a>
             </div>
         </div>
     </nav>
 
-    <!-- News Ticker -->
-    <div class="bg-red-700 text-white py-2 px-4 shadow-inner flex items-center">
-        <div class="flex items-center gap-2 bg-red-900 px-3 py-1 rounded font-bold whitespace-nowrap z-10 text-sm">
-            <i data-lucide="bell-ring" class="w-4 h-4 animate-bounce"></i> إعلانات عاجلة:
-        </div>
-        <div class="overflow-hidden w-full relative mr-2">
-            <div id="tickerContent" class="ticker-text font-medium text-base">
-                <!-- يُحمل ديناميكياً -->
+    <!-- News Ticker / شريط الأخبار العاجلة -->
+    <div class="bg-red-700 text-white py-2 px-4 shadow-inner flex items-center border-y border-red-800">
+        <div class="max-w-7xl mx-auto w-full flex items-center">
+            <div class="flex items-center gap-2 bg-red-900 px-3 py-1 rounded-lg font-bold whitespace-nowrap z-10 text-xs sm:text-sm shadow-sm">
+                <i data-lucide="bell-ring" class="w-4 h-4 text-yellow-400 animate-bounce"></i> إعلانات عاجلة:
+            </div>
+            <div class="overflow-hidden w-full relative mr-3">
+                <div id="tickerContent" class="ticker-text font-medium text-sm sm:text-base">
+                    <!-- يُحمل الخبر المباشر ديناميكياً -->
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
-        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 mb-8 text-center bg-gradient-to-br from-white to-slate-50">
-            <h1 class="text-3xl font-black text-indigo-950 mb-3">مرحباً بكم في البوابة التعليمية الموحدة</h1>
-            <p class="text-slate-600 max-w-2xl mx-auto text-sm leading-relaxed">منصة تفاعلية متكاملة لإدارة الأشغال اليومية، متابعة الجداول المدرسية، وربط الإدارة والمعلمين والطلاب وأولياء الأمور.</p>
-        </div>
+    <!-- Main Content / المحتوى الرئيسي -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
 
-        <div class="grid md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 col-span-2">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-950">
-                    <i data-lucide="calendar"></i> جدول الأشغال والتعويض اليومي المعتمد
-                </h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700">
-                                <th class="p-3 border">الصف والشعبة</th>
-                                <th class="p-3 border">الحصة</th>
-                                <th class="p-3 border">المعلم البديل</th>
-                                <th class="p-3 border">المادة</th>
-                            </tr>
-                        </thead>
-                        <tbody id="publicScheduleTable">
-                            <!-- جدول التعويض -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <!-- Hero Banner / القسم الترحيبي وبوابات الدخول السريعة -->
+        <div class="bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden border border-indigo-800/50">
+            <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10 max-w-3xl mx-auto text-center space-y-4">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 text-xs font-bold">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> نظام إدارة المدرسة الذكي 2026
+                </span>
+                <h1 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight">مرحباً بكم في المنصة الموحدة لإدارة المدرسة والمتابعة اليومية</h1>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+                    منظومة إلكترونية متكاملة لربط إدارة المدرسة، كادر المعلمين، الإداريين، والطلاب لمتابعة جدول الحصص والتعويضات اليومية بشكل أوتوماتيكي ومباشر.
+                </p>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-950">
-                    <i data-lucide="megaphone"></i> إعلانات المدرسة
-                </h2>
-                <div id="announcementsList" class="space-y-3">
-                    <!-- الإعلانات -->
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="bg-indigo-950 text-slate-400 text-center py-4 text-xs border-t border-indigo-900">
-        <p>جميع الحقوق محفوظة © مدرسة النموذج الحديثة 2026</p>
-    </footer>
-
-    <script src="js/main.js"></script>
-    <script>
-        lucide.createIcons();
-        document.addEventListener('DOMContentLoaded', () => {
-            renderNewsTicker();
-            renderPublicSchedule();
-            renderAnnouncements();
-        });
-    </script>
-</body>
-</html>
+                <!-- بطاقات الوصول
