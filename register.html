@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التسجيل الأول في النظام المدرسي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-100 font-sans min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white max-w-md w-full rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div class="bg-indigo-950 text-white p-6 text-center">
+            <i data-lucide="user-plus" class="w-12 h-12 mx-auto mb-2 text-yellow-400"></i>
+            <h1 class="text-xl font-bold">التسجيل وتفعيل الحساب (لأول مرة)</h1>
+            <p class="text-xs text-yellow-200 mt-1">أدخل رقمك الوزاري للتعرف عليك وتحديد مسماك الوظيفي</p>
+        </div>
+
+        <div class="p-6">
+            <div id="alertBox" class="hidden mb-4 p-3 rounded-lg text-sm text-center"></div>
+
+            <form onsubmit="handleFirstTimeRegistration(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">الرقم الوزاري</label>
+                    <input type="text" id="ministryIdInput" oninput="checkMinistryId(this.value)" required placeholder="أدخل رقمك الوزاري..." class="w-full p-2.5 border rounded-lg focus:outline-indigo-900">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">الاسم الكامل (يظهر تلقائياً)</label>
+                    <input type="text" id="fullNameInput" readonly placeholder="سيظهر اسمك فور إدخال الرقم الوزاري" class="w-full p-2.5 border rounded-lg bg-slate-100 font-semibold text-slate-700">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">المسمى الوظيفي (تلقائي حسب الكشف)</label>
+                    <input type="text" id="roleInput" readonly placeholder="المسمى الوظيفي..." class="w-full p-2.5 border rounded-lg bg-slate-100 font-bold text-indigo-900">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">رقم الهاتف</label>
+                    <input type="tel" id="phoneInput" required placeholder="07XXXXXXXX" class="w-full p-2.5 border rounded-lg">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">كلمة السر الجديدة</label>
+                    <input type="password" id="passwordInput" required placeholder="أنشئ كلمة سر خاصة بك" class="w-full p-2.5 border rounded-lg">
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-2.5 rounded-lg font-bold transition">حفظ البيانات على MongoDB والتسجيل</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
