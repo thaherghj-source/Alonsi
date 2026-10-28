@@ -13,87 +13,66 @@
 <body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl overflow-hidden my-6 border border-white/10">
-        <!-- Header -->
+        <!-- Header / رأس الصفحة -->
         <div class="bg-indigo-950 text-white p-6 text-center relative">
             <div class="w-14 h-14 bg-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-yellow-500/30">
                 <i data-lucide="user-plus" class="w-8 h-8 text-yellow-400"></i>
             </div>
-            <!-- العنوان بكلمة واحدة فقط -->
             <h1 class="text-2xl font-black tracking-wide">التسجيل</h1>
-            <p class="text-xs text-slate-300 mt-1">إنشاء حساب جديد والربط المباشر مع MongoDB Atlas</p>
+            <p class="text-xs text-slate-300 mt-1">أنشئ حسابك الجديد للتواصل والتفاعل مع النظام المدرسي</p>
         </div>
 
         <div class="p-8">
+            <!-- Alert Message / تنبيهات -->
             <div id="regAlert" class="hidden mb-4 p-3.5 rounded-xl text-sm text-center font-medium shadow-sm transition-all"></div>
 
             <form onsubmit="handleRegistrationSubmit(event)" class="space-y-4">
-                <!-- اختيار الفئة -->
+                <!-- اختيار نوع الحساب -->
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">نوع الحساب / الفئة:</label>
                     <select id="userRoleSelect" onchange="toggleAccountFields()" class="w-full p-3 border rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <option value="staff">كادر المدرسة (معلم / مدير / مساعد / إداري)</option>
+                        <option value="staff">الكادر المدرسي (معلم / مدير / مساعد / إداري)</option>
                         <option value="طالب">طالب / ولي أمر</option>
                     </select>
                 </div>
 
-                <!-- حقل الرقم الوزاري وزر البحث المباشر -->
+                <!-- حقل الرقم الوزاري + زر البحث (يظهر للكادر فقط) -->
                 <div id="ministryFieldContainer">
                     <label class="block text-sm font-bold text-slate-700 mb-1">الرقم الوزاري المعتمد</label>
                     <div class="flex gap-2">
-                        <input type="text" id="ministryIdInput" placeholder="أدخل الرقم الوزاري (مثال: 146193)..." class="flex-1 p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none font-semibold">
-                        <button type="button" onclick="searchMinistryData()" class="bg-indigo-900 hover:bg-indigo-950 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 transition shadow-md shrink-0">
+                        <input type="text" id="ministryIdInput" placeholder="أدخل الرقم الوزاري..." class="flex-1 p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none font-semibold">
+                        <button type="button" onclick="searchMinistryData()" class="bg-indigo-900 hover:bg-indigo-950 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 transition shadow-md cursor-pointer">
                             <i data-lucide="search" class="w-4 h-4 text-yellow-400"></i> بحث
                         </button>
                     </div>
                 </div>
 
-                <!-- الاسم الكامل (استخراج تلقائي بـ MongoDB/JSON) -->
+                <!-- الاسم الكامل (تلقائي للكادر / يدوي للطلاب) -->
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">الاسم الكامل</label>
-                    <input type="text" id="fullNameInput" required readonly placeholder="اضغط بحث بعد إدخال الرقم الوزاري..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-indigo-950">
+                    <input type="text" id="fullNameInput" required readonly placeholder="اضغط على زر بحث بعد إدخال الرقم الوزاري..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-indigo-950">
                 </div>
 
-                <!-- المسمى الوظيفي المستخرج -->
+                <!-- المسمى الوظيفي المستخرج (يظهر للكادر فقط) -->
                 <div id="roleDisplayContainer">
                     <label class="block text-sm font-bold text-slate-700 mb-1">المسمى الوظيفي المستخرج</label>
-                    <input type="text" id="roleDisplayInput" readonly placeholder="سيظهر المسمى الوظيفي هنا..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-emerald-700">
+                    <input type="text" id="roleDisplayInput" readonly placeholder="سيظهر المسمى بعد الضغط على بحث..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-emerald-700">
                 </div>
 
-                <!-- الصف والشعبة (للطلاب وأولياء الأمور فقط) -->
-                <div id="studentClassContainer" class="hidden">
-                    <label class="block text-sm font-bold text-slate-700 mb-1">الصف والشعبة</label>
-                    <select id="studentClassSelect" class="w-full p-3 border rounded-xl bg-slate-50 font-semibold">
-                        <option value="العاشر-أ">العاشر - أ</option>
-                        <option value="العاشر-ب">العاشر - ب</option>
-                        <option value="الحادي عشر-أ">الحادي عشر - أ</option>
-                    </select>
+                <!-- الصف والشعبة (يظهر للطلاب وأولياء الأمور فقط) -->
+                <div id="studentClassContainer" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">الصف الدراسـي والشعبة</label>
+                        <select id="studentClassSelect" class="w-full p-3 border rounded-xl bg-slate-50 font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
+                            <option value="العاشر-أ">العاشر - أ</option>
+                            <option value="العاشر-ب">العاشر - ب</option>
+                            <option value="الحادي عشر-أ">الحادي عشر - أ</option>
+                            <option value="الحادي عشر-ب">الحادي عشر - ب</option>
+                            <option value="الثاني عشر-أ">الثاني عشر - أ</option>
+                        </select>
+                    </div>
                 </div>
 
+                <!-- رقم الهاتف -->
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">رقم الهاتف</label>
-                    <input type="tel" id="phoneInput" required placeholder="07XXXXXXXX" class="w-full p-3 border rounded-xl bg-slate-50">
-                </div>
-
-                <!-- اسم المستخدم للجميع -->
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">اسم المستخدم (Username)</label>
-                    <input type="text" id="usernameInput" required placeholder="أنشئ اسم مستخدم خاص بك..." class="w-full p-3 border rounded-xl bg-slate-50 font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
-                </div>
-
-                <!-- كلمة السر للجميع -->
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">كلمة السر</label>
-                    <input type="password" id="passwordInput" required placeholder="••••••••" class="w-full p-3 border rounded-xl bg-slate-50">
-                </div>
-
-                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-3.5 rounded-xl font-bold transition shadow-lg shadow-indigo-950/30 flex items-center justify-center gap-2">
-                    <i data-lucide="save" class="w-5 h-5"></i> حفظ البيانات على MongoDB والتسجيل
-                </button>
-            </form>
-
-            <div class="mt-6 text-center border-t pt-4 flex justify-between items-center text-xs">
-                <a href="login.html" class="text-indigo-600 font-bold hover:underline">لديك حساب بالفعل؟ سجل دخولك</a>
-                <a href="index.html" class="text-slate-500 hover:text-slate-800 transition">الرئيسية</a>
-            </div>
-        </div>
-<!-- ... existing code -->
+                    <label class="
