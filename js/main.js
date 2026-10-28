@@ -1,6 +1,6 @@
 // إعدادات الربط مع MongoDB Atlas
 const MONGO_CONFIG = {
-    connectionString: "mongodb+srv://thaherghj_db_user:<db_password>@cluster0.3nmwwal.mongodb.net/",
+    connectionString: "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/",
     dbName: "school_system_db"
 };
 
