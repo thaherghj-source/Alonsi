@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الطالب المدرسية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-100 font-sans min-h-screen">
+
+    <nav class="bg-indigo-950 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <i data-lucide="graduation-cap" class="text-yellow-400 w-6 h-6"></i>
+            <span class="font-bold text-lg">بوابة الطالب وولي الأمر</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="studentWelcomeName" class="text-xs text-yellow-300 bg-indigo-900 px-3 py-1.5 rounded-lg"></span>
+            <a href="index.html" class="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg transition">خروج</a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6 space-y-6">
+        <!-- ترحيب بالطالب -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex justify-between items-center">
+            <div>
+                <h1 id="studentTitle" class="text-2xl font-black text-indigo-950 mb-1">مرحباً بك عزيزي الطالب</h1>
+                <p class="text-slate-500 text-sm">تابع جدول حصص صفك الدراسي والإعلانات اليومية الصادرة عن إدارة المدرسة.</p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl text-amber-900 font-bold text-sm">
+                صفك الدراسي: <span id="studentClassBadge" class="text-amber-700">العاشر - أ</span>
+            </div>
+        </div>
+
+        <!-- جدول الحصص الخاص بالصف -->
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-indigo-950 mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar" class="text-indigo-600"></i> جدول حصص الصف اليومي
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700">
+                                <th class="p-3 border">الحصة</th>
+                                <th class="p-3 border">المادة</th>
+                                <th class="p-3 border">المعلم</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-3 border">الأولى</td>
+                                <td class="p-3 border">رياضيات</td>
+                                <td class="p-3 border">أ. محمد السعيد</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 border">الثانية</td>
+                                <td class="p-3 border">علوم</td>
+                                <td class="p-3 border">أ. خالد عبد الله</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 border">الثالثة (تعويضية)</td>
+                                <td class="p-3 border">رياضيات (شغل)</td>
+                                <td class="p-3 border font-bold text-indigo-900">أ. محمد السعيد</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- الإعلانات والأنشطة -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-indigo-950 mb-4 flex items-center gap-2">
+                    <i data-lucide="megaphone" class="text-indigo-600"></i> الإعلانات المدرسية الموجهة
+                </h2>
+                <div class="space-y-3">
+                    <div class="p-3.5 bg-slate-50 border-r-4 border-indigo-600 rounded-xl text-sm">
+                        <p class="font-bold text-slate-900">بدء فعاليات الأنشطة الرياضية</p>
+                        <p class="text-xs text-slate-500 mt-1">يوم الأربعاء القادم تبدأ مباريات دوري المدرسة لكرة القدم.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/main.js"></script>
+    <script>
+        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+            if(session.name) {
+                document.getElementById('studentWelcomeName').textContent = session.name;
+                document.getElementById('studentTitle').textContent = `أهلاً بك، الطالب ${session.name}`;
+                if(session.studentClass) document.getElementById('studentClassBadge').textContent = session.studentClass;
+            }
+        });
+    </script>
+</body>
+</html>
