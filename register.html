@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التسجيل الشامل في البوابة المدرسية</title>
+    <title>التسجيل</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -16,45 +16,64 @@
         <!-- Header -->
         <div class="bg-indigo-950 text-white p-6 text-center relative">
             <div class="w-14 h-14 bg-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-yellow-500/30">
-                <i data-lucide="user-check" class="w-8 h-8 text-yellow-400"></i>
+                <i data-lucide="user-plus" class="w-8 h-8 text-yellow-400"></i>
             </div>
-            <h1 class="text-xl font-black">التسجيل وتفعيل الحساب لأول مرة</h1>
-            <p class="text-xs text-slate-300 mt-1">اختر صفتك، ثم أدخل رقمك الوزاري ليتم جلب اسمك ومسماك الوظيفي تلقائياً</p>
+            <!-- العنوان بكلمة واحدة فقط بناءً على الطلب -->
+            <h1 class="text-2xl font-black tracking-wide">التسجيل</h1>
+            <p class="text-xs text-slate-300 mt-1">أنشئ حسابك الجديد للوصول إلى البوابة المدرسية</p>
         </div>
 
         <div class="p-8">
-            <div id="regAlert" class="hidden mb-4 p-3 rounded-xl text-sm text-center font-medium shadow-sm"></div>
+            <div id="regAlert" class="hidden mb-4 p-3.5 rounded-xl text-sm text-center font-medium shadow-sm transition-all"></div>
 
-            <form onsubmit="handleUniversalRegistration(event)" class="space-y-4">
+            <form onsubmit="handleRegistrationSubmit(event)" class="space-y-4">
+                <!-- اختيار الفئة / نوع الحساب -->
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">نوع الحساب / الفئة:</label>
-                    <select id="userRoleSelect" onchange="toggleAccountType()" class="w-full p-3 border rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
+                    <select id="userRoleSelect" onchange="toggleAccountFields()" class="w-full p-3 border rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
                         <option value="staff">كادر المدرسة (معلم / مدير / مساعد / إداري)</option>
                         <option value="طالب">طالب / ولي أمر</option>
                     </select>
                 </div>
 
-                <!-- حقل الرقم الوزاري (للكوادر) -->
+                <!-- حقل الرقم الوزاري وزر البحث (يظهر للكوادر فقط) -->
                 <div id="ministryFieldContainer">
                     <label class="block text-sm font-bold text-slate-700 mb-1">الرقم الوزاري المعتمد</label>
-                    <input type="text" id="ministryIdInput" oninput="fetchStaffDetails(this.value)" placeholder="أدخل رقمك الوزاري (مثال: 171886)..." class="w-full p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none font-semibold">
-                    <p class="text-[11px] text-slate-500 mt-1">بمجرد إدخال الرقم الصحيح، سيظهر اسمك ومسماك الوظيفي أدناه تلقائياً.</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="ministryIdInput" placeholder="أدخل الرقم الوزاري..." class="flex-1 p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none font-semibold">
+                        <button type="button" onclick="searchMinistryData()" class="bg-indigo-900 hover:bg-indigo-950 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 transition shadow-md">
+                            <i data-lucide="search" class="w-4 h-4 text-yellow-400"></i> بحث
+                        </button>
+                    </div>
                 </div>
 
-                <!-- حقل الاسم التلقائي أو اسم الطالب -->
+                <!-- الاسم الكامل (يُستخرج تلقائياً للكوادر أو يُدخل يدوياً للطلاب) -->
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">الاسم الكامل</label>
-                    <input type="text" id="fullNameInput" required readonly placeholder="يُحدد تلقائياً بالرقم الوزاري..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-indigo-950">
+                    <input type="text" id="fullNameInput" required readonly placeholder="اضغط بحث بعد إدخال الرقم الوزاري..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-indigo-950">
                 </div>
 
-                <!-- حقل المسمى الوظيفي التلقائي (يظهر للعاملين) -->
+                <!-- المسمى الوظيفي المستخرج تلقائياً (يظهر للكوادر فقط) -->
                 <div id="roleDisplayContainer">
-                    <label class="block text-sm font-bold text-slate-700 mb-1">المسمى الوظيفي المحدد</label>
-                    <input type="text" id="roleDisplayInput" readonly placeholder="سيظهر المسمى الوظيفي تلقائياً..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-emerald-700">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">المسمى الوظيفي المستخرج</label>
+                    <input type="text" id="roleDisplayInput" readonly placeholder="سيظهر المسمى الوظيفي بعد البحث..." class="w-full p-3 border rounded-xl bg-slate-100 font-bold text-emerald-700">
                 </div>
 
-                <!-- حقل الصف والشعبة (يظهر للطلاب فقط) -->
+                <!-- الصف والشعبة (يظهر للطلاب وأولياء الأمور فقط) -->
                 <div id="studentClassContainer" class="hidden">
                     <label class="block text-sm font-bold text-slate-700 mb-1">الصف والشعبة</label>
                     <select id="studentClassSelect" class="w-full p-3 border rounded-xl bg-slate-50 font-semibold">
                         <option value="العاشر-أ">العاشر - أ</option>
+                        <option value="العاشر-ب">العاشر - ب</option>
+                        <option value="الحادي عشر-أ">الحادي عشر - أ</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">رقم الهاتف</label>
+                    <input type="tel" id="phoneInput" required placeholder="07XXXXXXXX" class="w-full p-3 border rounded-xl bg-slate-50">
+                </div>
+
+                <!-- إنشاء اسم مستخدم فريد للجميع -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">
