@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التسجيل - بوابة مدرسة النموذج الحديثة</title>
+    <title>التسجيل الشامل - البوابة المدرسية</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -21,129 +21,46 @@
                     <i data-lucide="user-plus" class="w-8 h-8 text-yellow-400"></i>
                 </div>
                 <h1 class="text-2xl font-black tracking-wide">التسجيل في البوابة المدرسية</h1>
-                <p class="text-xs text-slate-300 mt-1">قم بتعبئة بياناتك لتفعيل الحساب وإنشاء بيانات الدخول</p>
+                <p class="text-xs text-slate-300 mt-1">أدخل بياناتك للتحقق التلقائي والربط مع قاعدة البيانات</p>
             </div>
         </div>
 
         <div class="p-8">
-            <!-- صندوق التنبيهات والرسائل -->
+            <!-- صندوق التنبيهات -->
             <div id="regAlert" class="hidden mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all"></div>
 
             <form onsubmit="handleRegistrationSubmit(event)" class="space-y-5">
                 
-                <!-- اختيار القسم الأساسي -->
+                <!-- نوع الحساب / الفئة -->
                 <div>
                     <label class="block text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-2">
-                        <i data-lucide="layers" class="w-4 h-4 text-indigo-600"></i> حدد القسم الفئة
+                        <i data-lucide="layers" class="w-4 h-4 text-indigo-600"></i> نوع الحساب
                     </label>
-                    <select id="sectionSelect" onchange="switchRegistrationSection()" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <option value="staff">قسم الهيئة الإدارية والتعليمية</option>
-                        <option value="student">قسم الطلاب وأولياء الأمور</option>
+                    <select id="userRoleCategory" onchange="toggleRegistrationRole()" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <option value="staff">الكادر المدرسي (إدارة / معلمون / إداريون)</option>
+                        <option value="student">طالب / ولي أمر</option>
                     </select>
                 </div>
 
-                <!-- ==================== 1. قسم الهيئة الإدارية والتعليمية ==================== -->
-                <div id="staffSection" class="space-y-4">
-                    <!-- القائمة المنسدلة بأسماء الكادر -->
+                <!-- 1. قسم الكادر المدرسي (الرقم الوزاري مع البحث التلقائي) -->
+                <div id="staffRegistrationGroup" class="space-y-4">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="users" class="w-4 h-4 text-indigo-600"></i> اختر اسمك من قائمة الكادر المدرسي
+                            <i data-lucide="shield-check" class="w-4 h-4 text-amber-600"></i> الرقم الوزاري المعتمد
                         </label>
-                        <select id="staffNameSelect" onchange="onStaffNameSelectChange()" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-600 outline-none">
-                            <option value="">-- اختر الاسم من القائمة --</option>
-                            <!-- تُعبأ القائمة ديناميكياً بجميع الأسماء -->
-                        </select>
-                    </div>
-
-                    <!-- حقل المطابقة بالرقم الوزاري -->
-                    <div id="ministryCheckGroup" class="hidden">
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="shield-check" class="w-4 h-4 text-amber-600"></i> أدخل الرقم الوزاري للمطابقة والتأكيد
-                        </label>
-                        <input type="text" id="staffMinistryInput" placeholder="أدخل رقمك الوزاري المعتمد..." class="w-full p-3 border border-amber-300 rounded-xl bg-amber-50/50 font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
-                        <p class="text-[11px] text-amber-800 mt-1">ملاحظة: لن يتم قبول التسجيل إلا إذا تطابق الرقم الوزاري مع الاسم المحدد.</p>
-                    </div>
-
-                    <!-- إظهار المسمى والتصنيف التلقائي -->
-                    <div id="staffRoleDisplayGroup" class="hidden">
-                        <label class="block text-sm font-bold text-slate-700 mb-1">التصنيف الوظيفي التلقائي</label>
-                        <input type="text" id="staffRoleInput" readonly class="w-full p-3 border border-slate-200 rounded-xl bg-slate-100 font-bold text-emerald-700">
-                    </div>
-                </div>
-
-                <!-- ==================== 2. قسم الطلاب وأولياء الأمور ==================== -->
-                <div id="studentSection" class="space-y-4 hidden">
-                    <!-- الاسم الكامل للطالب -->
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i> الاسم الكامل للطالب / ولي الأمر
-                        </label>
-                        <input type="text" id="studentFullNameInput" placeholder="أدخل الاسم الثلاثي أو الرباعي..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none font-semibold">
-                    </div>
-
-                    <!-- اختيار الصف والدراسي والشعبة -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1.5">الصف الدراسي</label>
-                            <select id="studentGradeSelect" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                                <option value="العاشر">الصف العاشر</option>
-                                <option value="الحادي عشر">الصف الحادي عشر</option>
-                                <option value="الثاني عشر (التوجيهي)">الثاني عشر (التوجيهي)</option>
-                            </select>
+                        <div class="flex gap-2">
+                            <input type="text" id="ministryIdInput" placeholder="أدخل رقمك الوزاري (مثال: 146193)..." class="flex-1 p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
+                            <button type="button" onclick="lookupStaffByMinistryId()" class="bg-indigo-900 hover:bg-indigo-950 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 transition shadow-md cursor-pointer">
+                                <i data-lucide="search" class="w-4 h-4 text-yellow-400"></i> تحقق
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1.5">الشعبة</label>
-                            <select id="studentSectionSelect" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                                <option value="أ">شعبة ( أ )</option>
-                                <option value="ب">شعبة ( ب )</option>
-                                <option value="ج">شعبة ( ج )</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ==================== بيانات الحساب المشتركة للجميع ==================== -->
-                <div class="pt-3 border-t border-slate-200 space-y-4">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="phone" class="w-4 h-4 text-indigo-600"></i> رقم الهاتف
-                        </label>
-                        <input type="tel" id="phoneInput" required placeholder="07XXXXXXXX" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none font-semibold">
+                        <p class="text-[11px] text-slate-500 mt-1">بمجرد إدخال الرقم الصحيح والضغط على تحقق، سيتم جلب بياناتك وسجل تخصصه ومادتك تلقائياً.</p>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="at-sign" class="w-4 h-4 text-indigo-600"></i> إنشاء اسم مستخدم (Username)
-                        </label>
-                        <input type="text" id="usernameInput" required placeholder="أنشئ اسم مستخدم خاص بك باللغة الإنكليزية..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="key-round" class="w-4 h-4 text-indigo-600"></i> إنشاء كلمة السر
-                        </label>
-                        <input type="password" id="passwordInput" required placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-600 outline-none">
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-4 rounded-xl font-black transition shadow-lg shadow-indigo-950/30 flex items-center justify-center gap-2 cursor-pointer text-base">
-                    <i data-lucide="database" class="w-5 h-5 text-yellow-400"></i> إتمام التسجيل وتخزين البيانات على MongoDB
-                </button>
-            </form>
-
-            <div class="mt-6 text-center border-t pt-4 flex justify-between items-center text-xs">
-                <a href="login.html" class="text-indigo-600 font-bold hover:underline">لديك حساب بالفعل؟ سجل دخولك</a>
-                <a href="index.html" class="text-slate-500 hover:text-slate-800 transition">العودة للرئيسية</a>
-            </div>
-        </div>
-    </div>
-
-    <script src="js/main.js"></script>
-    <script>
-        lucide.createIcons();
-        document.addEventListener('DOMContentLoaded', () => {
-            populateStaffDropdown();
-        });
-    </script>
-</body>
-</html>
+                    <!-- بطاقة المعلومات المستخرجة تلقائياً للكادر -->
+                    <div id="staffInfoCard" class="hidden p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-2 text-sm">
+                        <p class="font-bold text-indigo-950">الاسم الكامل: <span id="resFullName" class="font-normal text-slate-800"></span></p>
+                        <p class="font-bold text-indigo-950">المسمى الوظيفي: <span id="resRole" class="font-normal text-emerald-700"></span></p>
+                        <p class="font-bold text-indigo-950">التخصص الأكاديمي: <span id="resMajor" class="font-normal text-slate-800"></span></p>
+                        <p class="font-bold text-indigo-950">المادة الدراسية: <span id="resSubject" class="font-normal text-slate-800"></span></p>
+                        <p class="font-bold text-indigo-950">الصفوف المسندة: <span id
