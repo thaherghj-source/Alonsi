@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التسجيل الشامل - البوابة المدرسية</title>
+    <title>التسجيل في البوابة المدرسية</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -21,46 +21,148 @@
                     <i data-lucide="user-plus" class="w-8 h-8 text-yellow-400"></i>
                 </div>
                 <h1 class="text-2xl font-black tracking-wide">التسجيل في البوابة المدرسية</h1>
-                <p class="text-xs text-slate-300 mt-1">أدخل بياناتك للتحقق التلقائي والربط مع قاعدة البيانات</p>
+                <p class="text-xs text-slate-300 mt-1">اختر القسم الخاص بك لإكمال إنشاء واسترجاع بيانات الحساب</p>
             </div>
         </div>
 
+        <!-- تبويبات اختيار القسم (Tabs) -->
+        <div class="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200">
+            <button type="button" id="tabStaffBtn" onclick="switchTab('staff')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md">
+                <i data-lucide="shield-check" class="w-4 h-4 text-yellow-400"></i> قسم كادر المدرسة
+            </button>
+            <button type="button" id="tabStudentBtn" onclick="switchTab('student')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950">
+                <i data-lucide="users" class="w-4 h-4"></i> قسم الطلاب وأولياء الأمور
+            </button>
+        </div>
+
         <div class="p-8">
-            <!-- صندوق التنبيهات -->
+            <!-- صندوق الرسائل والتنبيهات -->
             <div id="regAlert" class="hidden mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all"></div>
 
             <form onsubmit="handleRegistrationSubmit(event)" class="space-y-5">
-                
-                <!-- نوع الحساب / الفئة -->
-                <div>
-                    <label class="block text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-2">
-                        <i data-lucide="layers" class="w-4 h-4 text-indigo-600"></i> نوع الحساب
-                    </label>
-                    <select id="userRoleCategory" onchange="toggleRegistrationRole()" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <option value="staff">الكادر المدرسي (إدارة / معلمون / إداريون)</option>
-                        <option value="student">طالب / ولي أمر</option>
-                    </select>
-                </div>
+                <input type="hidden" id="activeSectionInput" value="staff">
 
-                <!-- 1. قسم الكادر المدرسي (الرقم الوزاري مع البحث التلقائي) -->
-                <div id="staffRegistrationGroup" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="shield-check" class="w-4 h-4 text-amber-600"></i> الرقم الوزاري المعتمد
+                <!-- ==================== 1. قسم الكادر المدرسي ==================== -->
+                <div id="staffSectionPanel" class="space-y-4">
+                    <div class="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/60">
+                        <label class="block text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="key" class="w-4 h-4 text-amber-600"></i> الرقم الوزاري المعتمد
                         </label>
                         <div class="flex gap-2">
-                            <input type="text" id="ministryIdInput" placeholder="أدخل رقمك الوزاري (مثال: 146193)..." class="flex-1 p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
+                            <input type="text" id="ministryIdInput" placeholder="أدخل الرقم الوزاري (مثال: 146193)..." class="flex-1 p-3 border border-slate-300 rounded-xl bg-white font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
                             <button type="button" onclick="lookupStaffByMinistryId()" class="bg-indigo-900 hover:bg-indigo-950 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 transition shadow-md cursor-pointer">
                                 <i data-lucide="search" class="w-4 h-4 text-yellow-400"></i> تحقق
                             </button>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1">بمجرد إدخال الرقم الصحيح والضغط على تحقق، سيتم جلب بياناتك وسجل تخصصه ومادتك تلقائياً.</p>
+                        <p class="text-[11px] text-slate-500 mt-1.5">بمجرد التحقق، سيتم جلب الاسم الكامل، المسمى، التخصص، والمواد تلقائياً.</p>
                     </div>
 
-                    <!-- بطاقة المعلومات المستخرجة تلقائياً للكادر -->
-                    <div id="staffInfoCard" class="hidden p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-2 text-sm">
-                        <p class="font-bold text-indigo-950">الاسم الكامل: <span id="resFullName" class="font-normal text-slate-800"></span></p>
-                        <p class="font-bold text-indigo-950">المسمى الوظيفي: <span id="resRole" class="font-normal text-emerald-700"></span></p>
-                        <p class="font-bold text-indigo-950">التخصص الأكاديمي: <span id="resMajor" class="font-normal text-slate-800"></span></p>
-                        <p class="font-bold text-indigo-950">المادة الدراسية: <span id="resSubject" class="font-normal text-slate-800"></span></p>
-                        <p class="font-bold text-indigo-950">الصفوف المسندة: <span id
+                    <!-- بطاقة نتائج التحقق التلقائي -->
+                    <div id="staffInfoCard" class="hidden p-4 rounded-2xl bg-indigo-50/80 border border-indigo-100 space-y-2 text-sm">
+                        <p class="font-bold text-indigo-950">الاسم الكامل: <span id="resFullName" class="font-semibold text-slate-800"></span></p>
+                        <p class="font-bold text-indigo-950">المسمى الوظيفي: <span id="resRole" class="font-semibold text-emerald-700"></span></p>
+                        <p class="font-bold text-indigo-950">التخصص الأكاديمي: <span id="resMajor" class="font-semibold text-slate-800"></span></p>
+                        <p class="font-bold text-indigo-950">المادة المسندة: <span id="resSubject" class="font-semibold text-slate-800"></span></p>
+                        <p class="font-bold text-indigo-950">الصفوف المسندة: <span id="resClasses" class="font-semibold text-slate-800"></span></p>
+                    </div>
+                </div>
+
+                <!-- ==================== 2. قسم الطلاب وأولياء الأمور ==================== -->
+                <div id="studentSectionPanel" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i> الاسم الكامل للطالب / ولي الأمر
+                        </label>
+                        <input type="text" id="studentNameInput" placeholder="أدخل الاسم الثلاثي أو الرباعي..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">الصف الدراسي</label>
+                            <select id="studentGradeSelect" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                                <option value="الصف السادس">الصف السادس</option>
+                                <option value="الصف السابع">الصف السابع</option>
+                                <option value="الصف الثامن">الصف الثامن</option>
+                                <option value="الصف التاسع">الصف التاسع</option>
+                                <option value="الصف العاشر">الصف العاشر</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">الشعبة</label>
+                            <select id="studentSectionSelect" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                                <option value="شعبة أ">شعبة ( أ )</option>
+                                <option value="شعبة ب">شعبة ( ب )</option>
+                                <option value="شعبة ج">شعبة ( ج )</option>
+                                <option value="شعبة د">شعبة ( د )</option>
+                                <option value="شعبة هـ">شعبة ( هـ )</option>
+                                <option value="شعبة و">شعبة ( و )</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== البيانات المشتركة ==================== -->
+                <div class="pt-3 border-t border-slate-200 space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="phone" class="w-4 h-4 text-indigo-600"></i> رقم الهاتف
+                        </label>
+                        <input type="tel" id="phoneInput" required placeholder="07XXXXXXXX" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="at-sign" class="w-4 h-4 text-indigo-600"></i> اسم المستخدم (Username)
+                        </label>
+                        <input type="text" id="usernameInput" required placeholder="أنشئ اسم مستخدم خاص بك بالإنجليزية..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="lock" class="w-4 h-4 text-indigo-600"></i> كلمة السر
+                        </label>
+                        <input type="password" id="passwordInput" required placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 outline-none">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-4 rounded-xl font-black transition shadow-lg shadow-indigo-950/30 flex items-center justify-center gap-2 cursor-pointer text-base">
+                    <i data-lucide="save" class="w-5 h-5 text-yellow-400"></i> إتمام التسجيل والحفظ التلقائي في MongoDB
+                </button>
+            </form>
+
+            <div class="mt-6 text-center border-t pt-4 flex justify-between items-center text-xs">
+                <a href="login.html" class="text-indigo-600 font-bold hover:underline">لديك حساب بالفعل؟ سجل دخولك</a>
+                <a href="index.html" class="text-slate-500 hover:text-slate-800 transition">العودة للرئيسية</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // التبديل السلس بين قسم الكادر وقسم أولياء الأمور والطلاب
+        function switchTab(section) {
+            const staffBtn = document.getElementById('tabStaffBtn');
+            const studentBtn = document.getElementById('tabStudentBtn');
+            const staffPanel = document.getElementById('staffSectionPanel');
+            const studentPanel = document.getElementById('studentSectionPanel');
+            const activeInput = document.getElementById('activeSectionInput');
+
+            activeInput.value = section;
+
+            if (section === 'staff') {
+                staffBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md";
+                studentBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950";
+                staffPanel.classList.remove('hidden');
+                studentPanel.classList.add('hidden');
+            } else {
+                studentBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md";
+                staffBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950";
+                studentPanel.classList.remove('hidden');
+                staffPanel.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
