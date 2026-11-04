@@ -1,10 +1,14 @@
-// إعدادات الربط بقاعدة بيانات MongoDB Atlas
+// ==========================================
+// 1. إعدادات قاعدة بيانات MongoDB Atlas
+// ==========================================
 const MONGO_CONFIG = {
-    connectionString: "mongodb+srv://thaherghj_db_user:<db_password>@cluster0.3nmwwal.mongodb.net/",
+    connectionString: "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/",
     dbName: "school_system_db"
 };
 
-// كشف الكادر المعتمد طبقاً لملفات التشكيلات والجدول الدراسي
+// ==========================================
+// 2. قاعدة بيانات الكادر المدرسي المعتمدة (حسب ملف الملكات والبرنامج المعتمد)
+// ==========================================
 const OFFICIAL_STAFF_DATABASE = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير المدرسة", major: "اللغة العربية وآدابها (ماجستير)", subject: "لا يدرس", classesTaught: [] },
     { id: "119829", fullName: "محمد عوض عبد القادر الخواجا", role: "مساعد مدير", major: "لغة عربية (دبلوم عالي)", subject: "لا يدرس", classesTaught: [] },
@@ -49,7 +53,9 @@ const OFFICIAL_STAFF_DATABASE = [
 
 let currentVerifiedStaff = null;
 
-// دالة التحقق بالرقم الوزاري للكادر
+// ==========================================
+// 3. دوال التحقق والبحث في صفحة التسجيل
+// ==========================================
 function lookupStaffByMinistryId() {
     const inputId = document.getElementById('ministryIdInput').value.trim();
     const card = document.getElementById('staffInfoCard');
@@ -78,11 +84,13 @@ function lookupStaffByMinistryId() {
     }
 }
 
-// دالة تقديم نموذج التسجيل وحفظ الكائنات لرفعها على MongoDB
+// ==========================================
+// 4. معالجة التسجيل وتخزين الكائنات بملف JSON مهيأ لـ MongoDB
+// ==========================================
 async function handleRegistrationSubmit(e) {
     e.preventDefault();
 
-    const activeSection = document.getElementById('activeSectionInput').value;
+    const activeSection = document.getElementById('activeSectionInput') ? document.getElementById('activeSectionInput').value : 'staff';
     const phone = document.getElementById('phoneInput').value.trim();
     const username = document.getElementById('usernameInput').value.trim();
     const password = document.getElementById('passwordInput').value;
@@ -175,3 +183,68 @@ function showRegAlert(msg, bgClass) {
     box.textContent = msg;
     box.classList.remove('hidden');
 }
+
+// ==========================================
+// 5. دوال تسجيل الدخول الموحدة باستخدام اسم المستخدم وكلمة السر
+// ==========================================
+function handleDatabaseLogin(e) {
+    e.preventDefault();
+
+    const usernameInput = document.getElementById('loginUsername').value.trim();
+    const passwordInput = document.getElementById('loginPassword').value;
+
+    const storedUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
+
+    const matchedUserWrapper = storedUsers.find(u => 
+        u.document && 
+        u.document.username === usernameInput && 
+        u.document.password === passwordInput
+    );
+
+    if (matchedUserWrapper) {
+        const userData = matchedUserWrapper.document;
+        localStorage.setItem('currentUserSession', JSON.stringify(userData));
+
+        showLoginAlert(`مرحباً بك يا ${userData.fullName || userData.username}! جاري التوجيه...`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+
+        setTimeout(() => {
+            const role = userData.role;
+            if (role === 'مدير المدرسة' || role === 'مساعد مدير' || role === 'امين عهدة' || role === 'إداري') {
+                window.location.href = 'admin.html';
+            } else if (role === 'معلم' || role === 'مرشد تربوي') {
+                window.location.href = 'teacher.html';
+            } else {
+                window.location.href = 'student-dashboard.html';
+            }
+        }, 1200);
+
+    } else {
+        showLoginAlert('عذراً، اسم المستخدم أو كلمة السر غير صحيحة!', 'bg-red-100 text-red-700 border border-red-300');
+    }
+}
+
+function showLoginAlert(msg, bgClass) {
+    const box = document.getElementById('loginAlert');
+    if (!box) return;
+    box.className = `mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all ${bgClass}`;
+    box.textContent = msg;
+    box.classList.remove('hidden');
+}
+
+// ==========================================
+// 6. لوحة تحكم المعلم (استخراج بياناته وبرنامجه الأسبوعي وتعديل الحساب)
+// ==========================================
+function loadTeacherDashboardData() {
+    const sessionStr = localStorage.getItem('currentUserSession');
+    if (!sessionStr) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const teacher = JSON.parse(sessionStr);
+
+    document.getElementById('headerTeacherName').textContent = teacher.fullName || teacher.name || "معلم محترم";
+    document.getElementById('headerTeacherRole').textContent = teacher.role || "معلم المادة";
+    document.getElementById('profileMajor').textContent = teacher.major || "غير متوفر";
+    document.getElementById('profileSubject').textContent = teacher.subject || "غير متوفر";
+    document.getElementById('profilePhone
