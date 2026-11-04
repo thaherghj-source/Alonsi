@@ -7,7 +7,7 @@ const MONGO_CONFIG = {
 };
 
 // ==========================================
-// 2. قاعدة البيانات الرسمية الشاملة لكوادر المدرسة (40 كادر)
+// 2. قاعدة البيانات الرسمية الشاملة لكوادر المدرسة (40 كادر) مع التخصصات والمواد والصفوف
 // ==========================================
 const OFFICIAL_SCHOOL_STAFF = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير", major: "اللغة العربية وآدابها", degree: "ماجستير", university: "العلوم الاسلامية", experience: "21 سنة", graduationYear: "2013", courses: "القياده", phone: "0795393224", subject: "لا يدرس", classesTaught: [], username: "tayel_admin", password: "changeme123", certificates: ["القيادة المدرسية المتقدمة"] },
@@ -54,7 +54,7 @@ const OFFICIAL_SCHOOL_STAFF = [
 
 let verifiedStaffMember = null;
 
-// تهيئة التخزين المحلي بقاعدة البيانات الرسمية عند فتح الموقع لأول مرة
+// تهيئة التخزين المحلي بقاعدة البيانات الرسمية عند فتح الموقع
 function initializeLocalStorageDatabase() {
     let storedUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
     if (storedUsers.length === 0) {
@@ -65,7 +65,7 @@ function initializeLocalStorageDatabase() {
 document.addEventListener('DOMContentLoaded', initializeLocalStorageDatabase);
 
 // ==========================================
-// 3. دالة التحقق الفعلي من الرقم الوزاري للكادر
+// 3. التحقق الفعلي من الرقم الوزاري وجلب البيانات
 // ==========================================
 function verifyStaffFromMongo() {
     initializeLocalStorageDatabase();
@@ -81,19 +81,19 @@ function verifyStaffFromMongo() {
     }
 
     let storedUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
-    let foundWrapper = storedUsers.find(u => u.document && String(u.document.ministryId) === String(inputId));
-    let found = foundWrapper ? foundWrapper.document : OFFICIAL_SCHOOL_STAFF.find(s => s.id === inputId);
+    let foundWrapper = storedUsers.find(u => u.document && String(u.document.ministryId).trim() === String(inputId));
+    let found = foundWrapper ? foundWrapper.document : OFFICIAL_SCHOOL_STAFF.find(s => String(s.id).trim() === String(inputId));
 
     if (found) {
         verifiedStaffMember = found;
         document.getElementById('resFullName').textContent = found.fullName;
         document.getElementById('resRole').textContent = found.role;
-        document.getElementById('resMajor').textContent = found.major;
-        document.getElementById('resSubject').textContent = found.subject;
+        document.getElementById('resMajor').textContent = `${found.degree || ''} ${found.major || ''} (${found.university || ''})`;
+        document.getElementById('resSubject').textContent = found.subject || "غير متوفر";
         document.getElementById('resClasses').textContent = (found.classesTaught && found.classesTaught.length > 0) ? found.classesTaught.join(', ') : 'لا يوجد';
         
         if (card) card.classList.remove('hidden');
-        showRegisterAlert(`تم التحقق بنجاح من بيانات الموظف: (${found.fullName}) - الوظيفة: (${found.role})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        showRegisterAlert(`تم التحقق بنجاح من الموظف: (${found.fullName}) - الوظيفة: (${found.role})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
     } else {
         verifiedStaffMember = null;
         if (card) card.classList.add('hidden');
@@ -102,7 +102,7 @@ function verifyStaffFromMongo() {
 }
 
 // ==========================================
-// 4. معالجة التسجيل الفعلي وحفظ البيانات
+// 4. معالجة التسجيل وحفظ اسم المستخدم وكلمة السر في قاعدة البيانات
 // ==========================================
 async function handleRegistrationSubmit(e) {
     e.preventDefault();
@@ -118,6 +118,11 @@ async function handleRegistrationSubmit(e) {
     const phone = phoneInput ? phoneInput.value.trim() : '';
     const username = usernameInput ? usernameInput.value.trim() : '';
     const password = passwordInput ? passwordInput.value : '';
+
+    if (!username || !password) {
+        showRegisterAlert('خطأ: اسم المستخدم وكلمة السر إجباريان للتسجيل.', 'bg-red-100 text-red-700 border border-red-300');
+        return;
+    }
 
     if (!phone) {
         showRegisterAlert('خطأ: رقم الهاتف إجباري ولا يمكن إتمام التسجيل بدونه.', 'bg-red-100 text-red-700 border border-red-300');
@@ -135,31 +140,20 @@ async function handleRegistrationSubmit(e) {
             return;
         }
 
-        if (!verifiedStaffMember || String(verifiedStaffMember.id) !== String(ministryId)) {
+        if (!verifiedStaffMember || String(verifiedStaffMember.id).trim() !== String(ministryId).trim()) {
             showRegisterAlert('خطأ: يجب الضغط على زر (تحقق) وتأكيد الرقم الوزاري قبل إتمام التسجيل!', 'bg-amber-100 text-amber-800 border border-amber-300');
             return;
         }
 
+        // دمج الحساب الجديد مع بيانات المعلم والاعتماد عليها
+        verifiedStaffMember.username = username;
+        verifiedStaffMember.password = password;
+        verifiedStaffMember.phone = phone;
+
         mongoDocumentPayload = {
             collection: "school_users",
             connectionUri: MONGO_CONFIG.connectionString,
-            document: {
-                username: username,
-                password: password,
-                ministryId: verifiedStaffMember.id,
-                fullName: verifiedStaffMember.fullName,
-                role: verifiedStaffMember.role,
-                major: verifiedStaffMember.major,
-                degree: verifiedStaffMember.degree,
-                university: verifiedStaffMember.university,
-                subject: verifiedStaffMember.subject,
-                classesTaught: verifiedStaffMember.classesTaught || [],
-                experience: verifiedStaffMember.experience,
-                graduationYear: verifiedStaffMember.graduationYear,
-                certificates: verifiedStaffMember.certificates || [],
-                phone: phone,
-                registeredAt: new Date().toISOString()
-            }
+            document: verifiedStaffMember
         };
 
     } else {
@@ -176,13 +170,8 @@ async function handleRegistrationSubmit(e) {
             return;
         }
 
-        if (!grade) {
-            showRegisterAlert('خطأ: الصف الدراسي إجباري لأولياء الأمور والطلاب!', 'bg-red-100 text-red-700 border border-red-300');
-            return;
-        }
-
-        if (!section) {
-            showRegisterAlert('خطأ: الشعبة الدراسية إجبارية لأولياء الأمور والطلاب!', 'bg-red-100 text-red-700 border border-red-300');
+        if (!grade || !section) {
+            showRegisterAlert('خطأ: الصف والشعبة الدراسية إجبارية لأولياء الأمور والطلاب!', 'bg-red-100 text-red-700 border border-red-300');
             return;
         }
 
@@ -204,17 +193,20 @@ async function handleRegistrationSubmit(e) {
     try {
         let storedUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
 
-        const usernameExists = storedUsers.some(u => u.document && u.document.username === username);
-        if (usernameExists) {
-            showRegisterAlert('اسم المستخدم هذا محجوز مسبقاً، يرجى اختيار اسم مستخدم آخر.', 'bg-amber-100 text-amber-800 border border-amber-300');
-            return;
+        // التحقق من عدم تكرار اسم المستخدم
+        const existingIndex = storedUsers.findIndex(u => u.document && String(u.document.username).trim() === String(username).trim());
+        
+        if (existingIndex !== -1) {
+            // تحديث الحساب إذا كان موجوداً مسبقاً
+            storedUsers[existingIndex] = mongoDocumentPayload;
+        } else {
+            storedUsers.push(mongoDocumentPayload);
         }
 
-        storedUsers.push(mongoDocumentPayload);
         localStorage.setItem('mongo_school_users', JSON.stringify(storedUsers));
         localStorage.setItem('currentUserSession', JSON.stringify(mongoDocumentPayload.document));
 
-        showRegisterAlert('تم تسجيل الحساب وحفظ البيانات بنجاح! جاري التوجيه...', 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        showRegisterAlert('تم تسجيل الحساب وحفظ البيانات بنجاح في قاعدة البيانات! جاري التوجيه...', 'bg-emerald-100 text-emerald-800 border border-emerald-300');
 
         setTimeout(() => {
             redirectBasedOnRole(mongoDocumentPayload.document.role);
@@ -234,7 +226,7 @@ function showRegisterAlert(msg, bgClass) {
 }
 
 // ==========================================
-// 5. تسجيل الدخول والتوجيه المخصص الذكي لكل كادر
+// 5. تسجيل الدخول والتوجيه الدقيق لكل كادر
 // ==========================================
 function handleDatabaseLogin(e) {
     e.preventDefault();
@@ -255,7 +247,7 @@ function handleDatabaseLogin(e) {
         const userData = matchedUserWrapper.document;
         localStorage.setItem('currentUserSession', JSON.stringify(userData));
 
-        showLoginAlert(`مرحباً بك يا ${userData.fullName} (${userData.role})! جاري نقلك لصفحتك المخصصة...`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        showLoginAlert(`مرحباً بك يا ${userData.fullName} (${userData.role})! جاري نقلك لصفحتك...`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
 
         setTimeout(() => {
             redirectBasedOnRole(userData.role);
@@ -297,7 +289,7 @@ function logout() {
 }
 
 // ==========================================
-// 6. لوحة المعلم واستخراج بياناته ودوراته
+// 6. لوحة المعلم وجلب البيانات والشهادات
 // ==========================================
 function loadTeacherDashboardData() {
     const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
