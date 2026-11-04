@@ -81,7 +81,7 @@
             </div>
         </div>
 
-        <!-- جدول الحصص الأسبوعي المستخرج من البرنامج المعتمد -->
+        <!-- جدول الحصص الأسبوعي المستخرج من البرنامج المعتمد وتوزيع المباحث -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div class="flex items-center gap-2">
@@ -105,7 +105,7 @@
                         </tr>
                     </thead>
                     <tbody id="teacherWeeklyScheduleBody" class="divide-y divide-slate-100 text-slate-700 font-medium text-xs">
-                        <!-- يتم تعبئة الجدول برمجياً -->
+                        <!-- يتم جلب وعرض الجدول برمجياً عبر schedule.js و main.js -->
                     </tbody>
                 </table>
             </div>
@@ -120,4 +120,59 @@
                     <h3 class="font-bold text-slate-800 text-sm">دوراتي وشهاداتي المعتمدة</h3>
                 </div>
                 <div id="certificatesContainer" class="flex flex-wrap gap-2">
-                    <!-- يتم
+                    <!-- يتم تعبئة الشهادات برمجياً -->
+                </div>
+                <form onsubmit="handleAddCertificate(event)" class="mt-4 pt-3 border-t border-slate-100 flex gap-2">
+                    <input type="text" id="newCertificateInput" placeholder="أضف دورة أو شهادة جديدة..." required
+                        class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                        إضافة
+                    </button>
+                </form>
+            </div>
+
+            <!-- تفاصيل البيانات الوظيفية -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
+                <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <i data-lucide="user-check" class="w-5 h-5 text-indigo-600"></i>
+                    <h3 class="font-bold text-slate-800 text-sm">الملف الوظيفي والخبرات</h3>
+                </div>
+                <div class="space-y-2.5 text-xs text-slate-600 font-medium">
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                        <span class="text-slate-400">سنوات الخبرة:</span>
+                        <span id="profileExperience" class="font-bold text-slate-800">-</span>
+                    </div>
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                        <span class="text-slate-400">سنة التخرج:</span>
+                        <span id="profileGraduation" class="font-bold text-slate-800">-</span>
+                    </div>
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                        <span class="text-slate-400">رقم الهاتف:</span>
+                        <span id="profilePhone" class="font-bold text-slate-800">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="bg-white border-t border-slate-200 text-center py-4 text-xs text-slate-400 mt-8">
+        جميع الحقوق محفوظة © النظام المدرسي المتكامل 2027
+    </footer>
+
+    <!-- ربط ملفات الجافا سكريبت بالترتيب المطلوب (schedule.js أولاً ثم main.js ثانياً) -->
+    <script src="js/schedule.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof loadTeacherDashboardData === 'function') {
+                loadTeacherDashboardData();
+            }
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>
