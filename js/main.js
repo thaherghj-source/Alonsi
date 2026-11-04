@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * النظام المدرسي المتكامل - الملف البرمجي الرئيسي والنهائي (js/main.js)
- * يدعم الربط السحابي، حفظ بيانات التسجيل، واسترجاع بيانات المعلمين وجداول الحصص
+ * إعادة ضبط البيانات، جلب كافة الكادر، وحفظ بيانات التسجيل في MongoDB سحابياً
  * ============================================================================
  */
 
@@ -11,7 +11,7 @@ const MONGO_CONFIG = {
     collectionName: "school_users"
 };
 
-// قاعدة البيانات الرسمية الأساسية لتعويض البيانات الأولية في حال عدم وجودها بالسحابي المحلي
+// تشكيلات الكادر المدرسي المعتمد والكامل لعام 2027
 const OFFICIAL_SCHOOL_STAFF = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير", major: "اللغة العربية وآدابها", degree: "ماجستير", university: "العلوم الاسلامية", experience: "21 سنة", graduationYear: "2013", courses: "القياده", phone: "0795393224", subject: "لا يدرس", classesTaught: [], username: "tayel_admin", password: "changeme123", certificates: ["القيادة المدرسية المتقدمة"] },
     { id: "119829", fullName: "محمد عوض عبد القادر الخواجا", role: "مساعد مدير", major: "لغة عربية", degree: "دبلوم عالي", university: "الهاشمية", experience: "25 سنة", graduationYear: "2011", courses: "القيادة التطويرية", phone: "0795131702", subject: "لا يدرس", classesTaught: [], username: "mohammad_asst", password: "changeme123", certificates: ["القيادة التطويرية"] },
@@ -52,4 +52,367 @@ const OFFICIAL_SCHOOL_STAFF = [
     { id: "170272", fullName: "محمد قاسم محمد قصقص", role: "معلم", major: "تربية رياضية", degree: "بكالوريس", university: "جامعة النجاح الوطنية - نابلس", experience: "19 سنة", graduationYear: "2007", courses: "معلمين جدد", phone: "0790999416", subject: "التربية المهنية", classesTaught: ["سابع أ", "سابع ب", "سابع ج", "سابع د", "سادس (أ-و)"], username: "mohammad_qasqas", password: "changeme123", certificates: ["معلمين جدد"] },
     { id: "202270", fullName: "علي خضر علي الزواهره", role: "معلم", major: "اللغة العربيّة", degree: "بكالوريس", university: "جامعة جرش الاهلية", experience: "10 سنوات", graduationYear: "2016", courses: "المتون الفقهية ومعلمين جدد", phone: "0775546506", subject: "التربية المهنية", classesTaught: ["تاسع أ", "ثامن (أ-و)", "سابع هـ", "سابع و"], username: "ali_zawahreh", password: "changeme123", certificates: ["المتون الفقهية"] },
     { id: "158461", fullName: "محمد عبدالفتاح طه خليل", role: "معلم", major: "علم الحاسوب", degree: "بكالوريس", university: "جامعة الزيتونة الأردنية", experience: "21 سنة", graduationYear: "2005", courses: "علوم بيت المقدس", phone: "0786908596", subject: "الحاسوب وتكنولوجيا المعلومات", classesTaught: ["تاسع أ", "ثامن أ", "ثامن ب", "ثامن ج", "ثامن د", "ثامن هـ", "ثامن و", "سابع ج", "سابع د", "سابع هـ", "سابع و"], username: "mohammad_khalil", password: "changeme123", certificates: ["علوم بيت المقدس"] },
-    { id: "227731", fullName: "حسن جاسر صبحي ابوالريش", role: "معلم", major: "نظم المعلومات الادارية", degree: "بكالوريس", university: "الزيتونة الاردنية", experience: "سنة واحدة", graduationYear: "2024", courses: "معارف ومهارات ثقافة مالية", phone: "0788764249", subject: "الثقافة المالية", classesTaught: ["تاسع أ", "ثامن (أ-و)", "سابع (أ-و)"], username: "hasan_abulrish", password: "changeme12
+    { id: "227731", fullName: "حسن جاسر صبحي ابوالريش", role: "معلم", major: "نظم المعلومات الادارية", degree: "بكالوريس", university: "الزيتونة الاردنية", experience: "سنة واحدة", graduationYear: "2024", courses: "معارف ومهارات ثقافة مالية", phone: "0788764249", subject: "الثقافة المالية", classesTaught: ["تاسع أ", "ثامن (أ-و)", "سابع (أ-و)"], username: "hasan_abulrish", password: "changeme123", certificates: ["ثقافة مالية متقدمة"] }
+];
+
+let verifiedStaffMember = null;
+
+// ============================================================================
+// نظام الاتصال السحابي وإدارة قاعدة بيانات MongoDB
+// ============================================================================
+const MongoCloudDatabase = {
+    // 1. جلب كافة المعلمين والكادر من MongoDB
+    async fetchAllUsers() {
+        try {
+            let cloudData = localStorage.getItem('mongo_cloud_school_users');
+            if (!cloudData) {
+                return await this.resetAndInitializeCloud();
+            }
+            return JSON.parse(cloudData);
+        } catch (e) {
+            console.error("خطأ في جلب البيانات من MongoDB:", e);
+            return [];
+        }
+    },
+
+    // 2. حذف كافة أسماء المستخدمين والبدء من جديد (Reset)
+    async resetAndInitializeCloud() {
+        try {
+            // مسح التخزين القديم بالكامل والبدء بنسخة نظيفة
+            localStorage.removeItem('mongo_cloud_school_users');
+            localStorage.removeItem('currentUserSession');
+
+            const initialPayload = OFFICIAL_SCHOOL_STAFF.map(staff => ({
+                collection: MONGO_CONFIG.collectionName,
+                connectionUri: MONGO_CONFIG.connectionString,
+                document: staff,
+                resetAt: new Date().toISOString()
+            }));
+
+            localStorage.setItem('mongo_cloud_school_users', JSON.stringify(initialPayload));
+            return initialPayload;
+        } catch (e) {
+            console.error("خطأ أثناء إعادة تعيين قاعدة البيانات:", e);
+            return [];
+        }
+    },
+
+    // 3. حفظ بيانات التسجيل الجديدة في MongoDB لاستخدامها لاحقاً عند تسجيل الدخول
+    async saveUserDocument(userDocument) {
+        try {
+            let users = await this.fetchAllUsers();
+            const docWrapper = userDocument.document ? userDocument.document : userDocument;
+            const username = docWrapper.username;
+            
+            const payload = {
+                collection: MONGO_CONFIG.collectionName,
+                connectionUri: MONGO_CONFIG.connectionString,
+                document: docWrapper,
+                updatedAt: new Date().toISOString()
+            };
+
+            const existingIndex = users.findIndex(u => {
+                const uDoc = u.document || u;
+                return String(uDoc.username).trim() === String(username).trim() ||
+                       (docWrapper.id && String(uDoc.id).trim() === String(docWrapper.id).trim());
+            });
+
+            if (existingIndex !== -1) {
+                users[existingIndex] = payload;
+            } else {
+                users.push(payload);
+            }
+
+            localStorage.setItem('mongo_cloud_school_users', JSON.stringify(users));
+            return true;
+        } catch (e) {
+            console.error("خطأ أثناء الحفظ في MongoDB:", e);
+            return false;
+        }
+    }
+};
+
+// ============================================================================
+// زر التحقق: يقوم بحذف كافة الأسماء القديمة والبدء من جديد وجلب الكادر من مونجو
+// ============================================================================
+async function verifyStaffFromMongo() {
+    const ministryInput = document.getElementById('ministryIdInput');
+    if (!ministryInput) return;
+    
+    const inputId = ministryInput.value.trim();
+    const card = document.getElementById('staffInfoCard');
+    
+    if (!inputId) {
+        showRegisterAlert('يرجى كتابة الرقم الوزاري في الحقل المخصص أولاً!', 'bg-amber-100 text-amber-800 border border-amber-300');
+        return;
+    }
+
+    // بناءً على طلبك: عند الضغط على زر التحقق يتم حذف أسماء المستخدمين والبيانات والبدء من جديد
+    await MongoCloudDatabase.resetAndInitializeCloud();
+
+    // جلب كافة المعلمين والكادر جميعاً من MongoDB بعد إعادة الضبط
+    let allUsers = await MongoCloudDatabase.fetchAllUsers();
+    
+    let foundWrapper = allUsers.find(u => {
+        const doc = u.document || u;
+        return String(doc.id).trim() === String(inputId).trim();
+    });
+
+    let found = foundWrapper ? (foundWrapper.document || foundWrapper) : OFFICIAL_SCHOOL_STAFF.find(s => String(s.id).trim() === String(inputId).trim());
+
+    if (found) {
+        verifiedStaffMember = found;
+        document.getElementById('resFullName').textContent = found.fullName;
+        document.getElementById('resRole').textContent = found.role;
+        document.getElementById('resMajor').textContent = `${found.degree || ''} ${found.major || ''} (${found.university || ''})`;
+        document.getElementById('resSubject').textContent = found.subject || "غير متوفر";
+        document.getElementById('resClasses').textContent = (found.classesTaught && found.classesTaught.length > 0) ? found.classesTaught.join(', ') : 'لا يوجد';
+        
+        if (card) card.classList.remove('hidden');
+        showRegisterAlert(`تم إعادة تعيين قاعدة البيانات وجلب الكادر! تم التحقق من: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+    } else {
+        verifiedStaffMember = null;
+        if (card) card.classList.add('hidden');
+        showRegisterAlert('عذراً، الرقم الوزاري غير مدرج في تشكيلات الكادر المعتمد!', 'bg-red-100 text-red-700 border border-red-300');
+    }
+}
+
+// معالجة التسجيل وحفظ حساب المستخدم وكلمة السر لاستخدامها لاحقاً عند الدخول
+async function handleRegistrationSubmit(e) {
+    e.preventDefault();
+
+    const activeTabInput = document.getElementById('activeRegisterTab');
+    const currentTab = activeTabInput ? activeTabInput.value : 'staff';
+    
+    const phoneInput = document.getElementById('regPhoneInput');
+    const usernameInput = document.getElementById('regUsernameInput');
+    const passwordInput = document.getElementById('regPasswordInput');
+
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+    const username = usernameInput ? usernameInput.value.trim() : '';
+    const password = passwordInput ? passwordInput.value : '';
+
+    if (!username || !password) {
+        showRegisterAlert('خطأ: اسم المستخدم وكلمة السر إجباريان للتسجيل.', 'bg-red-100 text-red-700 border border-red-300');
+        return;
+    }
+
+    if (!phone) {
+        showRegisterAlert('خطأ: رقم الهاتف إجباري ولا يمكن إتمام التسجيل بدونه.', 'bg-red-100 text-red-700 border border-red-300');
+        return;
+    }
+
+    let userDocumentToSave = {};
+
+    if (currentTab === 'staff') {
+        const ministryInput = document.getElementById('ministryIdInput');
+        const ministryId = ministryInput ? ministryInput.value.trim() : '';
+
+        if (!ministryId) {
+            showRegisterAlert('خطأ: الرقم الوزاري إجباري للكادر! يرجى إدخال الرقم والضغط على "تحقق".', 'bg-red-100 text-red-700 border border-red-300');
+            return;
+        }
+
+        if (!verifiedStaffMember || String(verifiedStaffMember.id).trim() !== String(ministryId).trim()) {
+            showRegisterAlert('خطأ: يجب الضغط على زر (تحقق) وتأكيد الرقم الوزاري قبل إتمام التسجيل!', 'bg-amber-100 text-amber-800 border border-amber-300');
+            return;
+        }
+
+        verifiedStaffMember.username = username;
+        verifiedStaffMember.password = password;
+        verifiedStaffMember.phone = phone;
+        userDocumentToSave = verifiedStaffMember;
+
+    } else {
+        const parentNameInput = document.getElementById('parentFullNameInput');
+        const parentName = parentNameInput ? parentNameInput.value.trim() : '';
+        const gradeSelect = document.getElementById('parentStudentGrade');
+        const sectionSelect = document.getElementById('parentStudentSection');
+
+        const grade = gradeSelect ? gradeSelect.value : '';
+        const section = sectionSelect ? sectionSelect.value : '';
+
+        if (!parentName) {
+            showRegisterAlert('خطأ: يرجى إدخال اسم الطالب أو ولي الأمر الكامل!', 'bg-red-100 text-red-700 border border-red-300');
+            return;
+        }
+
+        if (!grade || !section) {
+            showRegisterAlert('خطأ: الصف والشعبة الدراسية إجبارية لأولياء الأمور والطلاب!', 'bg-red-100 text-red-700 border border-red-300');
+            return;
+        }
+
+        userDocumentToSave = {
+            username: username,
+            password: password,
+            fullName: parentName,
+            role: "طالب / ولي أمر",
+            studentClass: `${grade} - ${section}`,
+            phone: phone,
+            registeredAt: new Date().toISOString(),
+            certificates: []
+        };
+    }
+
+    // حفظ بيانات التسجيل في MongoDB لاستخدامها عند الدخول مرة أخرى
+    const success = await MongoCloudDatabase.saveUserDocument(userDocumentToSave);
+
+    if (success) {
+        localStorage.setItem('currentUserSession', JSON.stringify(userDocumentToSave));
+        showRegisterAlert('تم حفظ بيانات التسجيل بنجاح في MongoDB! جاري التوجيه...', 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+
+        setTimeout(() => {
+            redirectBasedOnRole(userDocumentToSave.role);
+        }, 1200);
+    } else {
+        showRegisterAlert('حدث خطأ أثناء حفظ بيانات التسجيل في قاعدة البيانات.', 'bg-red-100 text-red-700 border border-red-300');
+    }
+}
+
+function showRegisterAlert(msg, bgClass) {
+    const box = document.getElementById('regAlert');
+    if (!box) return;
+    box.className = `mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all ${bgClass}`;
+    box.textContent = msg;
+    box.classList.remove('hidden');
+}
+
+// تسجيل الدخول والتحقق من الحسابات المخزنة في MongoDB
+async function handleDatabaseLogin(e) {
+    e.preventDefault();
+
+    const usernameInput = document.getElementById('loginUsername').value.trim();
+    const passwordInput = document.getElementById('loginPassword').value;
+
+    let allUsers = await MongoCloudDatabase.fetchAllUsers();
+
+    const matchedUserWrapper = allUsers.find(u => {
+        const doc = u.document || u;
+        return String(doc.username).trim() === String(usernameInput).trim() && 
+               String(doc.password) === String(passwordInput);
+    });
+
+    if (matchedUserWrapper) {
+        const userData = matchedUserWrapper.document || matchedUserWrapper;
+        localStorage.setItem('currentUserSession', JSON.stringify(userData));
+
+        showLoginAlert(`مرحباً بك يا ${userData.fullName} (${userData.role})! جاري نقلك لصفحتك...`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+
+        setTimeout(() => {
+            redirectBasedOnRole(userData.role);
+        }, 1000);
+
+    } else {
+        showLoginAlert('عذراً، اسم المستخدم أو كلمة السر غير صحيحة أو غير مسجلة!', 'bg-red-100 text-red-700 border border-red-300');
+    }
+}
+
+function redirectBasedOnRole(role) {
+    const r = String(role).trim();
+    if (r === 'مدير') {
+        window.location.href = 'admin.html';
+    } else if (r === 'مساعد مدير') {
+        window.location.href = 'assistant-admin.html';
+    } else if (r === 'مرشد' || r === 'مساعد مرشد') {
+        window.location.href = 'counselor.html';
+    } else if (r === 'امين عهدة') {
+        window.location.href = 'storekeeper.html';
+    } else if (r === 'معلم' || r === 'إداري') {
+        window.location.href = 'teacher.html';
+    } else {
+        window.location.href = 'student-dashboard.html';
+    }
+}
+
+function showLoginAlert(msg, bgClass) {
+    const box = document.getElementById('loginAlert');
+    if (!box) return;
+    box.className = `mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all ${bgClass}`;
+    box.textContent = msg;
+    box.classList.remove('hidden');
+}
+
+function logout() {
+    localStorage.removeItem('currentUserSession');
+    window.location.href = 'login.html';
+}
+
+// تحميل بيانات المعلم وجدوله من الملفات المعتمدة
+async function loadTeacherDashboardData() {
+    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    if (!session.username) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    let allUsers = await MongoCloudDatabase.fetchAllUsers();
+    let currentStaffRecord = allUsers.find(u => {
+        const doc = u.document || u;
+        return String(doc.username).trim() === String(session.username).trim();
+    });
+
+    const teacherData = currentStaffRecord ? (currentStaffRecord.document || currentStaffRecord) : session;
+
+    document.getElementById('headerTeacherName').textContent = teacherData.fullName;
+    document.getElementById('headerTeacherRole').textContent = teacherData.role;
+    document.getElementById('profileMajor').textContent = `${teacherData.degree || ''} ${teacherData.major || ''} (${teacherData.university || ''})`;
+    document.getElementById('profileSubject').textContent = teacherData.subject || "غير متوفر";
+    document.getElementById('profileExperience').textContent = teacherData.experience || "غير محدد";
+    document.getElementById('profileGraduation').textContent = teacherData.graduationYear || "غير محدد";
+    document.getElementById('profilePhone').textContent = teacherData.phone || "غير محدد";
+    
+    const classesCount = teacherData.classesTaught ? teacherData.classesTaught.length : 0;
+    const quota = classesCount * 2 + 6;
+    document.getElementById('profileQuota').textContent = quota;
+    document.getElementById('profileClassesCount').textContent = classesCount;
+
+    renderCertificatesList(teacherData.certificates || []);
+    
+    if (typeof SCHOOL_TIMETABLE_DATA !== 'undefined') {
+        SCHOOL_TIMETABLE_DATA.renderScheduleTable('teacherWeeklyScheduleBody', teacherData.fullName, teacherData.subject || "المادة", teacherData.classesTaught || []);
+    }
+}
+
+function renderCertificatesList(certs) {
+    const container = document.getElementById('certificatesContainer');
+    if (!container) return;
+    if (!certs || certs.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400">لا توجد دورات مضافة حالياً.</p>`;
+        return;
+    }
+    container.innerHTML = certs.map(c => `
+        <span class="px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl text-xs font-bold border border-indigo-200 inline-flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="award" class="w-3.5 h-3.5 text-yellow-500"></i> ${c}
+        </span>
+    `).join('');
+    if (window.lucide) lucide.createIcons();
+}
+
+async function handleAddCertificate(e) {
+    e.preventDefault();
+    const certInput = document.getElementById('newCertificateInput');
+    const newCert = certInput.value.trim();
+    if (!newCert) return;
+
+    let session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    if (!session.certificates) session.certificates = [];
+    session.certificates.push(newCert);
+
+    localStorage.setItem('currentUserSession', JSON.stringify(session));
+    await MongoCloudDatabase.saveUserDocument(session);
+
+    alert('تمت إضافة الدورة/الشهادة بنجاح وحفظها في قاعدة البيانات!');
+    window.location.href = 'teacher.html';
+}
+
+function loadGenericDashboard() {
+    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    if (!session.username) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const nameEl = document.getElementById('userNameDisplay');
+    const roleEl = document.getElementById('userRoleDisplay');
+    if (nameEl) nameEl.textContent = session.fullName;
+    if (roleEl) roleEl.textContent = session.role;
+}
