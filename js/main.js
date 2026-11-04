@@ -1,5 +1,5 @@
 // ==========================================
-// إعدادات اتصال MongoDB Atlas
+// إعدادات اتصال MongoDB Atlas المحاكية
 // ==========================================
 const MONGO_CONFIG = {
     connectionString: "mongodb+srv://thaherghj_db_user:<db_password>@cluster0.3nmwwal.mongodb.net/",
@@ -7,7 +7,7 @@ const MONGO_CONFIG = {
 };
 
 // ==========================================
-// قاعدة البيانات المحدثة بناءً على ملف توزيع المباحث وملكات المدرسة
+// قاعدة البيانات الرسمية للكادر المدرسي (مستخرجة من ملفات الملاكات وتوزيع المباحث)
 // ==========================================
 const OFFICIAL_SCHOOL_STAFF = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير المدرسة", major: "اللغة العربية وآدابها (ماجستير)", experience: "21 سنة", graduationYear: "2013", subject: "لا يدرس", classesTaught: [], username: "tayel_admin", password: "changeme123", certificates: ["قيادة مدرسية متقدمة"] },
@@ -20,7 +20,7 @@ const OFFICIAL_SCHOOL_STAFF = [
 ];
 
 // ==========================================
-// توجيه تسجيل الدخول بحسب الدور الوظيفي
+// إدارة تسجيل الدخول وتوجيه المستخدمين
 // ==========================================
 function handleDatabaseLogin(e) {
     e.preventDefault();
@@ -28,7 +28,6 @@ function handleDatabaseLogin(e) {
     const p = document.getElementById('loginPassword').value;
 
     let users = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
-    // دمج البيانات الأساسية إذا لم تكن مخزنة محلياً
     if (users.length === 0) {
         users = OFFICIAL_SCHOOL_STAFF.map(staff => ({ document: staff }));
         localStorage.setItem('mongo_school_users', JSON.stringify(users));
@@ -56,8 +55,14 @@ function handleDatabaseLogin(e) {
     }
 }
 
+// تسجيل الخروج
+function logout() {
+    localStorage.removeItem('currentUserSession');
+    window.location.href = 'login.html';
+}
+
 // ==========================================
-// تحميل بيانات المعلم وبرنامجه الأسبوعي وتخرجه وخبرته
+// لوحة المعلم والبيانات الشخصية والشهادات
 // ==========================================
 function loadTeacherDashboardData() {
     const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
@@ -70,24 +75,19 @@ function loadTeacherDashboardData() {
     document.getElementById('headerTeacherRole').textContent = session.role;
     document.getElementById('profileMajor').textContent = session.major || "غير متوفر";
     document.getElementById('profileSubject').textContent = session.subject || "غير متوفر";
-    document.getElementById('profileExperience').textContent = session.خبرة || session.experience || "غير محدد";
-    document.getElementById('profileGraduation').textContent = session.سنة_التخرج || session.graduationYear || "غير محدد";
+    document.getElementById('profileExperience').textContent = session.experience || "غير محدد";
+    document.getElementById('profileGraduation').textContent = session.graduationYear || "غير محدد";
     document.getElementById('profilePhone').textContent = session.phone || "غير محدد";
     
-    // حساب النصاب التدريبي وعدد الحصص الأسبوعية
     const classesCount = session.classesTaught ? session.classesTaught.length : 0;
-    const quota = classesCount * 2 + 6; // حساب تقديري للحصص بناءً على الجدول
+    const quota = classesCount * 2 + 6;
     document.getElementById('profileQuota').textContent = quota;
     document.getElementById('profileClassesCount').textContent = classesCount;
 
-    // عرض الدورات والشهادات
     renderCertificatesList(session.certificates || []);
-
-    // توليد الجدول الأسبوعي
     renderTeacherSchedule(session.subject || "المادة");
 }
 
-// عرض قائمة الدورات والشهادات
 function renderCertificatesList(certs) {
     const container = document.getElementById('certificatesContainer');
     if (!container) return;
@@ -96,14 +96,13 @@ function renderCertificatesList(certs) {
         return;
     }
     container.innerHTML = certs.map(c => `
-        <span class="px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl text-xs font-bold border border-indigo-200 inline-flex items-center gap-1.5">
+        <span class="px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl text-xs font-bold border border-indigo-200 inline-flex items-center gap-1.5 shadow-sm">
             <i data-lucide="award" class="w-3.5 h-3.5 text-yellow-500"></i> ${c}
         </span>
     `).join('');
     if (window.lucide) lucide.createIcons();
 }
 
-// إضافة دورة أو شهادة جديدة وصيانتها في قاعدة البيانات
 function handleAddCertificate(e) {
     e.preventDefault();
     const certInput = document.getElementById('newCertificateInput');
@@ -116,7 +115,6 @@ function handleAddCertificate(e) {
 
     localStorage.setItem('currentUserSession', JSON.stringify(session));
 
-    // تحديث السجل العام في الذاكرة / MongoDB Simulation
     let allUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
     const idx = allUsers.findIndex(u => u.document.username === session.username);
     if (idx !== -1) {
@@ -124,11 +122,10 @@ function handleAddCertificate(e) {
         localStorage.setItem('mongo_school_users', JSON.stringify(allUsers));
     }
 
-    alert('تمت إضافة الدورة/الشهادة بنجاح!');
+    alert('تمت إضافة الدورة/الشهادة بنجاح وتحديثها في النظام!');
     window.location.href = 'teacher.html';
 }
 
-// توليد الجدول الأسبوعي للحصص
 function renderTeacherSchedule(subjectName) {
     const tbody = document.getElementById('teacherWeeklyScheduleBody');
     if (!tbody) return;
@@ -140,10 +137,23 @@ function renderTeacherSchedule(subjectName) {
             <td class="p-3.5 border text-center"><span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-lg font-bold text-xs">${subjectName}</span></td>
             <td class="p-3.5 border text-center"><span class="text-slate-400 text-xs">حصة حرة / إشراف</span></td>
             <td class="p-3.5 border text-center"><span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-lg font-bold text-xs">${subjectName}</span></td>
-            <td class="p-3.5 border text-center"><span class="text-slate-400 text-xs">نشاط مدرسى</span></td>
+            <td class="p-3.5 border text-center"><span class="text-slate-400 text-xs">نشاط مدرسي</span></td>
             <td class="p-3.5 border text-center"><span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-lg font-bold text-xs">${subjectName}</span></td>
             <td class="p-3.5 border text-center"><span class="text-slate-400 text-xs">استراحة</span></td>
             <td class="p-3.5 border text-center"><span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-lg font-bold text-xs">${subjectName}</span></td>
         </tr>
     `).join('');
+}
+
+// تحميل بيانات اللوحات الأخرى للمسؤولين
+function loadGenericDashboard() {
+    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    if (!session.username) {
+        window.location.href = 'login.html';
+        return;
+    }
+    const nameEl = document.getElementById('userNameDisplay');
+    const roleEl = document.getElementById('userRoleDisplay');
+    if (nameEl) nameEl.textContent = session.fullName;
+    if (roleEl) roleEl.textContent = session.role;
 }
