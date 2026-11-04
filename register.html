@@ -21,7 +21,7 @@
                     <i data-lucide="user-plus" class="w-8 h-8 text-yellow-400"></i>
                 </div>
                 <h1 class="text-2xl font-black tracking-wide">التسجيل لأول مرة في البوابة</h1>
-                <p class="text-xs text-slate-300 mt-1">اختر القسم الخاص بك وأكمل البيانات المطلوبة للتسجيل والحفظ في MongoDB</p>
+                <p class="text-xs text-slate-300 mt-1">اختر القسم الخاص بك للتحقق التلقائي والربط بقاعدة بيانات MongoDB</p>
             </div>
         </div>
 
@@ -54,7 +54,7 @@
                                 <i data-lucide="search" class="w-4 h-4 text-yellow-400"></i> تحقق
                             </button>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1.5">ملاحظة: حقل إجباري، لن تتم عملية التسجيل بدون إدخال الرقم الوزاري والضغط على "تحقق".</p>
+                        <p class="text-[11px] text-slate-500 mt-1.5">ملاحظة إجبارية: يجب إدخال الرقم الوزاري والضغط على "تحقق" لجلب البيانات واستكمال التسجيل.</p>
                     </div>
 
                     <!-- بطاقة بيانات الكادر المستخرجة -->
@@ -70,4 +70,99 @@
                 <!-- ==================== 2. قسم أولياء الأمور والطلاب ==================== -->
                 <div id="parentSectionPanel" class="space-y-4 hidden">
                     <div>
-                        <label class="block text-sm
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i> اسم الطالب الكامل / ولي الأمر <span class="text-red-600">*</span>
+                        </label>
+                        <input type="text" id="parentFullNameInput" placeholder="أدخل الاسم الثلاثي الكامل..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">الصف الدراسي <span class="text-red-600">*</span></label>
+                            <select id="parentStudentGrade" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                                <option value="">-- اختر الصف --</option>
+                                <option value="الصف السادس">الصف السادس</option>
+                                <option value="الصف السابع">الصف السابع</option>
+                                <option value="الصف الثامن">الصف الثامن</option>
+                                <option value="الصف التاسع">الصف التاسع</option>
+                                <option value="الصف العاشر">الصف العاشر</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">الشعبة <span class="text-red-600">*</span></label>
+                            <select id="parentStudentSection" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                                <option value="">-- اختر الشعبة --</option>
+                                <option value="شعبة أ">شعبة ( أ )</option>
+                                <option value="شعبة ب">شعبة ( ب )</option>
+                                <option value="شعبة ج">شعبة ( ج )</option>
+                                <option value="شعبة د">شعبة ( د )</option>
+                                <option value="شعبة هـ">شعبة ( هـ )</option>
+                                <option value="شعبة و">شعبة ( و )</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== بيانات الحساب المشتركة ==================== -->
+                <div class="pt-3 border-t border-slate-200 space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="phone" class="w-4 h-4 text-indigo-600"></i> رقم الهاتف <span class="text-red-600">*</span>
+                        </label>
+                        <input type="tel" id="regPhoneInput" required placeholder="07XXXXXXXX" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="at-sign" class="w-4 h-4 text-indigo-600"></i> اسم المستخدم للدخول (Username) <span class="text-red-600">*</span>
+                        </label>
+                        <input type="text" id="regUsernameInput" required placeholder="أنشئ اسم مستخدم بالإنجليزية..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                            <i data-lucide="lock" class="w-4 h-4 text-indigo-600"></i> كلمة السر <span class="text-red-600">*</span>
+                        </label>
+                        <input type="password" id="regPasswordInput" required placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 outline-none">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-4 rounded-xl font-black transition shadow-lg shadow-indigo-950/30 flex items-center justify-center gap-2 cursor-pointer text-base">
+                    <i data-lucide="database" class="w-5 h-5 text-yellow-400"></i> حفظ البيانات وربطها مع MongoDB
+                </button>
+            </form>
+
+            <div class="mt-6 text-center border-t pt-4 flex justify-between items-center text-xs">
+                <a href="login.html" class="text-indigo-600 font-bold hover:underline">لديك حساب مسجل مسبقاً؟ سجل دخولك</a>
+                <a href="index.html" class="text-slate-500 hover:text-slate-800 transition">الرئيسية</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        lucide.createIcons();
+        function switchRegistrationTab(tab) {
+            const staffBtn = document.getElementById('tabStaffBtn');
+            const parentBtn = document.getElementById('tabParentBtn');
+            const staffPanel = document.getElementById('staffSectionPanel');
+            const parentPanel = document.getElementById('parentSectionPanel');
+            const activeInput = document.getElementById('activeRegisterTab');
+
+            activeInput.value = tab;
+
+            if (tab === 'staff') {
+                staffBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md cursor-pointer";
+                parentBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950 cursor-pointer";
+                staffPanel.classList.remove('hidden');
+                parentPanel.classList.add('hidden');
+            } else {
+                parentBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md cursor-pointer";
+                staffBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950 cursor-pointer";
+                parentPanel.classList.remove('hidden');
+                staffPanel.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
