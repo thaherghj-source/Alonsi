@@ -4,7 +4,7 @@ const MONGO_CONFIG = {
     dbName: "school_system_db"
 };
 
-// قاعدة بيانات الكادر المدرسي المعتمدة (متضمنة الأرقام الوزارية، التخصصات، والصفوف المسندة)
+// كشف الكادر المعتمد طبقاً لملفات التشكيلات والجدول الدراسي
 const OFFICIAL_STAFF_DATABASE = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير المدرسة", major: "اللغة العربية وآدابها (ماجستير)", subject: "لا يدرس", classesTaught: [] },
     { id: "119829", fullName: "محمد عوض عبد القادر الخواجا", role: "مساعد مدير", major: "لغة عربية (دبلوم عالي)", subject: "لا يدرس", classesTaught: [] },
@@ -49,13 +49,13 @@ const OFFICIAL_STAFF_DATABASE = [
 
 let currentVerifiedStaff = null;
 
-// دالة البحث التلقائي واستخراج البيانات عبر الرقم الوزاري للكادر
+// دالة التحقق بالرقم الوزاري للكادر
 function lookupStaffByMinistryId() {
     const inputId = document.getElementById('ministryIdInput').value.trim();
     const card = document.getElementById('staffInfoCard');
     
     if (!inputId) {
-        showRegAlert('يرجى إدخال الرقم الوزاري أولاً!', 'bg-amber-100 text-amber-800 border border-amber-300');
+        showRegAlert('يرجى كتابة الرقم الوزاري في الحقل أولاً!', 'bg-amber-100 text-amber-800 border border-amber-300');
         return;
     }
 
@@ -70,32 +70,32 @@ function lookupStaffByMinistryId() {
         document.getElementById('resClasses').textContent = found.classesTaught.join(', ') || 'لا يوجد';
         
         card.classList.remove('hidden');
-        showRegAlert(`تم التحقق بنجاح من بيانات الموظف: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        showRegAlert(`تم العثور بنجاح على البيانات الرسمية للموظف: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
     } else {
         currentVerifiedStaff = null;
         card.classList.add('hidden');
-        showRegAlert('عذراً، الرقم الوزاري غير مدرج في الكشف الرسمي المعتمد!', 'bg-red-100 text-red-700 border border-red-300');
+        showRegAlert('عذراً، هذا الرقم الوزاري غير مدرج في تشكيلات الكادر المعتمد!', 'bg-red-100 text-red-700 border border-red-300');
     }
 }
 
-// دالة إرسال وتخزين البيانات وتجهيز ملف JSON لـ MongoDB
+// دالة تقديم نموذج التسجيل وحفظ الكائنات لرفعها على MongoDB
 async function handleRegistrationSubmit(e) {
     e.preventDefault();
 
-    const roleCategory = document.getElementById('userRoleCategory').value;
+    const activeSection = document.getElementById('activeSectionInput').value;
     const phone = document.getElementById('phoneInput').value.trim();
     const username = document.getElementById('usernameInput').value.trim();
     const password = document.getElementById('passwordInput').value;
 
-    let finalPayload = {};
+    let payload = {};
 
-    if (roleCategory === 'staff') {
+    if (activeSection === 'staff') {
         if (!currentVerifiedStaff) {
             showRegAlert('يرجى إدخال الرقم الوزاري والضغط على (تحقق) أولاً!', 'bg-amber-100 text-amber-800 border border-amber-300');
             return;
         }
 
-        finalPayload = {
+        payload = {
             collection: "school_users",
             connectionUri: MONGO_CONFIG.connectionString,
             document: {
@@ -122,7 +122,7 @@ async function handleRegistrationSubmit(e) {
             return;
         }
 
-        finalPayload = {
+        payload = {
             collection: "school_users",
             connectionUri: MONGO_CONFIG.connectionString,
             document: {
@@ -142,18 +142,18 @@ async function handleRegistrationSubmit(e) {
 
         const exists = storedUsers.some(u => u.document.username === username);
         if (exists) {
-            showRegAlert('اسم المستخدم مستخدم مسبقاً، يرجى اختيار اسم آخر!', 'bg-amber-100 text-amber-800 border border-amber-300');
+            showRegAlert('اسم المستخدم محجوز مسبقاً، يرجى اختيار اسم مستخدم آخر!', 'bg-amber-100 text-amber-800 border border-amber-300');
             return;
         }
 
-        storedUsers.push(finalPayload);
+        storedUsers.push(payload);
         localStorage.setItem('mongo_school_users', JSON.stringify(storedUsers));
-        localStorage.setItem('currentUserSession', JSON.stringify(finalPayload.document));
+        localStorage.setItem('currentUserSession', JSON.stringify(payload.document));
 
-        showRegAlert(`تم تسجيل وتخزين البيانات بنجاح في قاعدة MongoDB باسم المستخدم (${username})!`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        showRegAlert(`تم تسجيل الحساب وتخزين بيانات (${username}) بنجاح لرفعها إلى MongoDB!`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
 
         setTimeout(() => {
-            const r = finalPayload.document.role;
+            const r = payload.document.role;
             if (r === 'مدير المدرسة' || r === 'مساعد مدير' || r === 'امين عهدة' || r === 'إداري') {
                 window.location.href = 'admin.html';
             } else if (r === 'معلم' || r === 'مرشد تربوي') {
@@ -164,7 +164,7 @@ async function handleRegistrationSubmit(e) {
         }, 1500);
 
     } catch (err) {
-        showRegAlert('حدث خطأ أثناء الاتصال أو الحفظ.', 'bg-red-100 text-red-700 border border-red-300');
+        showRegAlert('حدث خطأ أثناء إتمام العملية.', 'bg-red-100 text-red-700 border border-red-300');
     }
 }
 
