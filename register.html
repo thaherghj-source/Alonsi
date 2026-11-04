@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التسجيل في البوابة المدرسية</title>
+    <title>التسجيل لأول مرة - البوابة المدرسية</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -20,17 +20,17 @@
                 <div class="w-14 h-14 bg-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-yellow-500/30">
                     <i data-lucide="user-plus" class="w-8 h-8 text-yellow-400"></i>
                 </div>
-                <h1 class="text-2xl font-black tracking-wide">التسجيل في البوابة المدرسية</h1>
-                <p class="text-xs text-slate-300 mt-1">اختر القسم الخاص بك لإكمال إنشاء واسترجاع بيانات الحساب</p>
+                <h1 class="text-2xl font-black tracking-wide">التسجيل لأول مرة في البوابة</h1>
+                <p class="text-xs text-slate-300 mt-1">اختر القسم الخاص بك لإكمال إنشاء الحساب وربطه بقاعدة البيانات</p>
             </div>
         </div>
 
         <!-- تبويبات اختيار القسم (Tabs) -->
         <div class="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200">
-            <button type="button" id="tabStaffBtn" onclick="switchTab('staff')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md">
+            <button type="button" id="tabStaffBtn" onclick="switchTab('staff')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md cursor-pointer">
                 <i data-lucide="shield-check" class="w-4 h-4 text-yellow-400"></i> قسم كادر المدرسة
             </button>
-            <button type="button" id="tabStudentBtn" onclick="switchTab('student')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950">
+            <button type="button" id="tabStudentBtn" onclick="switchTab('student')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950 cursor-pointer">
                 <i data-lucide="users" class="w-4 h-4"></i> قسم الطلاب وأولياء الأمور
             </button>
         </div>
@@ -42,7 +42,7 @@
             <form onsubmit="handleRegistrationSubmit(event)" class="space-y-5">
                 <input type="hidden" id="activeSectionInput" value="staff">
 
-                <!-- ==================== 1. قسم الكادر المدرسي ==================== -->
+                <!-- ==================== 1. قسم كادر المدرسة ==================== -->
                 <div id="staffSectionPanel" class="space-y-4">
                     <div class="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/60">
                         <label class="block text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-2">
@@ -54,10 +54,10 @@
                                 <i data-lucide="search" class="w-4 h-4 text-yellow-400"></i> تحقق
                             </button>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1.5">بمجرد التحقق، سيتم جلب الاسم الكامل، المسمى، التخصص، والمواد تلقائياً.</p>
+                        <p class="text-[11px] text-slate-500 mt-1.5">أدخل رقمك الوزاري واضغط تحقق لجلب اسمك، تخصصك، ومادتك الدراسية تلقائياً.</p>
                     </div>
 
-                    <!-- بطاقة نتائج التحقق التلقائي -->
+                    <!-- بطاقة نتائج التحقق التلقائي للكادر -->
                     <div id="staffInfoCard" class="hidden p-4 rounded-2xl bg-indigo-50/80 border border-indigo-100 space-y-2 text-sm">
                         <p class="font-bold text-indigo-950">الاسم الكامل: <span id="resFullName" class="font-semibold text-slate-800"></span></p>
                         <p class="font-bold text-indigo-950">المسمى الوظيفي: <span id="resRole" class="font-semibold text-emerald-700"></span></p>
@@ -101,7 +101,7 @@
                     </div>
                 </div>
 
-                <!-- ==================== البيانات المشتركة ==================== -->
+                <!-- ==================== البيانات المشتركة للدخول ==================== -->
                 <div class="pt-3 border-t border-slate-200 space-y-4">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
@@ -112,57 +112,22 @@
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="at-sign" class="w-4 h-4 text-indigo-600"></i> اسم المستخدم (Username)
+                            <i data-lucide="at-sign" class="w-4 h-4 text-indigo-600"></i> إنشاء اسم مستخدم (Username) للدخول لاحقاً
                         </label>
                         <input type="text" id="usernameInput" required placeholder="أنشئ اسم مستخدم خاص بك بالإنجليزية..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="lock" class="w-4 h-4 text-indigo-600"></i> كلمة السر
+                            <i data-lucide="lock" class="w-4 h-4 text-indigo-600"></i> إنشاء كلمة السر
                         </label>
                         <input type="password" id="passwordInput" required placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 outline-none">
                     </div>
                 </div>
 
                 <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-4 rounded-xl font-black transition shadow-lg shadow-indigo-950/30 flex items-center justify-center gap-2 cursor-pointer text-base">
-                    <i data-lucide="save" class="w-5 h-5 text-yellow-400"></i> إتمام التسجيل والحفظ التلقائي في MongoDB
+                    <i data-lucide="database" class="w-5 h-5 text-yellow-400"></i> إتمام التسجيل والحفظ التلقائي في MongoDB
                 </button>
             </form>
 
-            <div class="mt-6 text-center border-t pt-4 flex justify-between items-center text-xs">
-                <a href="login.html" class="text-indigo-600 font-bold hover:underline">لديك حساب بالفعل؟ سجل دخولك</a>
-                <a href="index.html" class="text-slate-500 hover:text-slate-800 transition">العودة للرئيسية</a>
-            </div>
-        </div>
-    </div>
-
-    <script src="js/main.js"></script>
-    <script>
-        lucide.createIcons();
-
-        // التبديل السلس بين قسم الكادر وقسم أولياء الأمور والطلاب
-        function switchTab(section) {
-            const staffBtn = document.getElementById('tabStaffBtn');
-            const studentBtn = document.getElementById('tabStudentBtn');
-            const staffPanel = document.getElementById('staffSectionPanel');
-            const studentPanel = document.getElementById('studentSectionPanel');
-            const activeInput = document.getElementById('activeSectionInput');
-
-            activeInput.value = section;
-
-            if (section === 'staff') {
-                staffBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md";
-                studentBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950";
-                staffPanel.classList.remove('hidden');
-                studentPanel.classList.add('hidden');
-            } else {
-                studentBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md";
-                staffBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950";
-                studentPanel.classList.remove('hidden');
-                staffPanel.classList.add('hidden');
-            }
-        }
-    </script>
-</body>
-</html>
+            <div class
