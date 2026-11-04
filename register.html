@@ -21,28 +21,28 @@
                     <i data-lucide="user-plus" class="w-8 h-8 text-yellow-400"></i>
                 </div>
                 <h1 class="text-2xl font-black tracking-wide">التسجيل لأول مرة في البوابة</h1>
-                <p class="text-xs text-slate-300 mt-1">اختر القسم الخاص بك لإكمال إنشاء الحساب وربطه بقاعدة البيانات</p>
+                <p class="text-xs text-slate-300 mt-1">اختر القسم الخاص بك للتحقق التلقائي والربط بقاعدة بيانات MongoDB</p>
             </div>
         </div>
 
         <!-- تبويبات اختيار القسم (Tabs) -->
         <div class="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200">
-            <button type="button" id="tabStaffBtn" onclick="switchTab('staff')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md cursor-pointer">
-                <i data-lucide="shield-check" class="w-4 h-4 text-yellow-400"></i> قسم كادر المدرسة
+            <button type="button" id="tabStaffBtn" onclick="switchRegistrationTab('staff')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md cursor-pointer">
+                <i data-lucide="shield-check" class="w-4 h-4 text-yellow-400"></i> قسم الكادر المدرسي
             </button>
-            <button type="button" id="tabStudentBtn" onclick="switchTab('student')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950 cursor-pointer">
-                <i data-lucide="users" class="w-4 h-4"></i> قسم الطلاب وأولياء الأمور
+            <button type="button" id="tabParentBtn" onclick="switchRegistrationTab('parent')" class="py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950 cursor-pointer">
+                <i data-lucide="users" class="w-4 h-4"></i> قسم أولياء الأمور والطلاب
             </button>
         </div>
 
         <div class="p-8">
-            <!-- صندوق الرسائل والتنبيهات -->
+            <!-- صندوق التنبيهات والرسائل -->
             <div id="regAlert" class="hidden mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all"></div>
 
             <form onsubmit="handleRegistrationSubmit(event)" class="space-y-5">
-                <input type="hidden" id="activeSectionInput" value="staff">
+                <input type="hidden" id="activeRegisterTab" value="staff">
 
-                <!-- ==================== 1. قسم كادر المدرسة ==================== -->
+                <!-- ==================== 1. قسم الكادر المدرسي ==================== -->
                 <div id="staffSectionPanel" class="space-y-4">
                     <div class="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/60">
                         <label class="block text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-2">
@@ -50,36 +50,36 @@
                         </label>
                         <div class="flex gap-2">
                             <input type="text" id="ministryIdInput" placeholder="أدخل الرقم الوزاري (مثال: 146193)..." class="flex-1 p-3 border border-slate-300 rounded-xl bg-white font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                            <button type="button" onclick="lookupStaffByMinistryId()" class="bg-indigo-900 hover:bg-indigo-950 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 transition shadow-md cursor-pointer">
+                            <button type="button" onclick="verifyStaffFromMongo()" class="bg-indigo-900 hover:bg-indigo-950 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 transition shadow-md cursor-pointer">
                                 <i data-lucide="search" class="w-4 h-4 text-yellow-400"></i> تحقق
                             </button>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1.5">أدخل رقمك الوزاري واضغط تحقق لجلب اسمك، تخصصك، ومادتك الدراسية تلقائياً.</p>
+                        <p class="text-[11px] text-slate-500 mt-1.5">أدخل رقمك الوزاري واضغط "تحقق" لجلب اسمك وتخصصك ومادتك وسجل صفوفك مباشرة من MongoDB.</p>
                     </div>
 
-                    <!-- بطاقة نتائج التحقق التلقائي للكادر -->
+                    <!-- بطاقة بيانات الكادر المستخرجة -->
                     <div id="staffInfoCard" class="hidden p-4 rounded-2xl bg-indigo-50/80 border border-indigo-100 space-y-2 text-sm">
                         <p class="font-bold text-indigo-950">الاسم الكامل: <span id="resFullName" class="font-semibold text-slate-800"></span></p>
                         <p class="font-bold text-indigo-950">المسمى الوظيفي: <span id="resRole" class="font-semibold text-emerald-700"></span></p>
                         <p class="font-bold text-indigo-950">التخصص الأكاديمي: <span id="resMajor" class="font-semibold text-slate-800"></span></p>
-                        <p class="font-bold text-indigo-950">المادة المسندة: <span id="resSubject" class="font-semibold text-slate-800"></span></p>
+                        <p class="font-bold text-indigo-950">المادة الدراسية: <span id="resSubject" class="font-semibold text-slate-800"></span></p>
                         <p class="font-bold text-indigo-950">الصفوف المسندة: <span id="resClasses" class="font-semibold text-slate-800"></span></p>
                     </div>
                 </div>
 
-                <!-- ==================== 2. قسم الطلاب وأولياء الأمور ==================== -->
-                <div id="studentSectionPanel" class="space-y-4 hidden">
+                <!-- ==================== 2. قسم أولياء الأمور والطلاب ==================== -->
+                <div id="parentSectionPanel" class="space-y-4 hidden">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i> الاسم الكامل للطالب / ولي الأمر
+                            <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i> اسم الطالب الكامل / ولي الأمر
                         </label>
-                        <input type="text" id="studentNameInput" placeholder="أدخل الاسم الثلاثي أو الرباعي..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <input type="text" id="parentFullNameInput" placeholder="أدخل الاسم الثلاثي الكامل..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1.5">الصف الدراسي</label>
-                            <select id="studentGradeSelect" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                            <select id="parentStudentGrade" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
                                 <option value="الصف السادس">الصف السادس</option>
                                 <option value="الصف السابع">الصف السابع</option>
                                 <option value="الصف الثامن">الصف الثامن</option>
@@ -89,7 +89,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1.5">الشعبة</label>
-                            <select id="studentSectionSelect" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                            <select id="parentStudentSection" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
                                 <option value="شعبة أ">شعبة ( أ )</option>
                                 <option value="شعبة ب">شعبة ( ب )</option>
                                 <option value="شعبة ج">شعبة ( ج )</option>
@@ -101,33 +101,66 @@
                     </div>
                 </div>
 
-                <!-- ==================== البيانات المشتركة للدخول ==================== -->
+                <!-- ==================== بيانات الحساب المشتركة ==================== -->
                 <div class="pt-3 border-t border-slate-200 space-y-4">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
                             <i data-lucide="phone" class="w-4 h-4 text-indigo-600"></i> رقم الهاتف
                         </label>
-                        <input type="tel" id="phoneInput" required placeholder="07XXXXXXXX" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold outline-none">
+                        <input type="tel" id="regPhoneInput" required placeholder="07XXXXXXXX" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-semibold outline-none">
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="at-sign" class="w-4 h-4 text-indigo-600"></i> إنشاء اسم مستخدم (Username) للدخول لاحقاً
+                            <i data-lucide="at-sign" class="w-4 h-4 text-indigo-600"></i> اسم المستخدم للدخول (Username)
                         </label>
-                        <input type="text" id="usernameInput" required placeholder="أنشئ اسم مستخدم خاص بك بالإنجليزية..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
+                        <input type="text" id="regUsernameInput" required placeholder="أنشئ اسم مستخدم بالإنجليزية..." class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-indigo-950 outline-none">
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                            <i data-lucide="lock" class="w-4 h-4 text-indigo-600"></i> إنشاء كلمة السر
+                            <i data-lucide="lock" class="w-4 h-4 text-indigo-600"></i> كلمة السر
                         </label>
-                        <input type="password" id="passwordInput" required placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 outline-none">
+                        <input type="password" id="regPasswordInput" required placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 outline-none">
                     </div>
                 </div>
 
                 <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-4 rounded-xl font-black transition shadow-lg shadow-indigo-950/30 flex items-center justify-center gap-2 cursor-pointer text-base">
-                    <i data-lucide="database" class="w-5 h-5 text-yellow-400"></i> إتمام التسجيل والحفظ التلقائي في MongoDB
+                    <i data-lucide="database" class="w-5 h-5 text-yellow-400"></i> حفظ البيانات وربطها مع MongoDB
                 </button>
             </form>
 
-            <div class
+            <div class="mt-6 text-center border-t pt-4 flex justify-between items-center text-xs">
+                <a href="login.html" class="text-indigo-600 font-bold hover:underline">لديك حساب مسجل مسبقاً؟ سجل دخولك</a>
+                <a href="index.html" class="text-slate-500 hover:text-slate-800 transition">الرئيسية</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        lucide.createIcons();
+        function switchRegistrationTab(tab) {
+            const staffBtn = document.getElementById('tabStaffBtn');
+            const parentBtn = document.getElementById('tabParentBtn');
+            const staffPanel = document.getElementById('staffSectionPanel');
+            const parentPanel = document.getElementById('parentSectionPanel');
+            const activeInput = document.getElementById('activeRegisterTab');
+
+            activeInput.value = tab;
+
+            if (tab === 'staff') {
+                staffBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md cursor-pointer";
+                parentBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950 cursor-pointer";
+                staffPanel.classList.remove('hidden');
+                parentPanel.classList.add('hidden');
+            } else {
+                parentBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 bg-indigo-950 text-white shadow-md cursor-pointer";
+                staffBtn.className = "py-3 px-4 rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-950 cursor-pointer";
+                parentPanel.classList.remove('hidden');
+                staffPanel.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
