@@ -1,16 +1,17 @@
 /**
  * ============================================================================
- * النظام المدرسي المتكامل - الملف البرمجي الرئيسي (js/main.js)
- * إدارة الجلسات، التحقق من الرقم الوزاري، التسجيل، تسجيل الدخول، والتوجيه
+ * النظام المدرسي المتكامل - الملف البرمجي الرئيسي والنهائي (js/main.js)
+ * يدعم الربط السحابي، حفظ بيانات التسجيل، واسترجاع بيانات المعلمين وجداول الحصص
  * ============================================================================
  */
 
 const MONGO_CONFIG = {
     connectionString: "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/",
-    dbName: "school_system_db"
+    dbName: "school_system_db",
+    collectionName: "school_users"
 };
 
-// قاعدة البيانات الرسمية الشاملة لكوادر المدرسة وتوزيع المباحث والصفوف لعام 2027
+// قاعدة البيانات الرسمية الأساسية لتعويض البيانات الأولية في حال عدم وجودها بالسحابي المحلي
 const OFFICIAL_SCHOOL_STAFF = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير", major: "اللغة العربية وآدابها", degree: "ماجستير", university: "العلوم الاسلامية", experience: "21 سنة", graduationYear: "2013", courses: "القياده", phone: "0795393224", subject: "لا يدرس", classesTaught: [], username: "tayel_admin", password: "changeme123", certificates: ["القيادة المدرسية المتقدمة"] },
     { id: "119829", fullName: "محمد عوض عبد القادر الخواجا", role: "مساعد مدير", major: "لغة عربية", degree: "دبلوم عالي", university: "الهاشمية", experience: "25 سنة", graduationYear: "2011", courses: "القيادة التطويرية", phone: "0795131702", subject: "لا يدرس", classesTaught: [], username: "mohammad_asst", password: "changeme123", certificates: ["القيادة التطويرية"] },
@@ -51,4 +52,4 @@ const OFFICIAL_SCHOOL_STAFF = [
     { id: "170272", fullName: "محمد قاسم محمد قصقص", role: "معلم", major: "تربية رياضية", degree: "بكالوريس", university: "جامعة النجاح الوطنية - نابلس", experience: "19 سنة", graduationYear: "2007", courses: "معلمين جدد", phone: "0790999416", subject: "التربية المهنية", classesTaught: ["سابع أ", "سابع ب", "سابع ج", "سابع د", "سادس (أ-و)"], username: "mohammad_qasqas", password: "changeme123", certificates: ["معلمين جدد"] },
     { id: "202270", fullName: "علي خضر علي الزواهره", role: "معلم", major: "اللغة العربيّة", degree: "بكالوريس", university: "جامعة جرش الاهلية", experience: "10 سنوات", graduationYear: "2016", courses: "المتون الفقهية ومعلمين جدد", phone: "0775546506", subject: "التربية المهنية", classesTaught: ["تاسع أ", "ثامن (أ-و)", "سابع هـ", "سابع و"], username: "ali_zawahreh", password: "changeme123", certificates: ["المتون الفقهية"] },
     { id: "158461", fullName: "محمد عبدالفتاح طه خليل", role: "معلم", major: "علم الحاسوب", degree: "بكالوريس", university: "جامعة الزيتونة الأردنية", experience: "21 سنة", graduationYear: "2005", courses: "علوم بيت المقدس", phone: "0786908596", subject: "الحاسوب وتكنولوجيا المعلومات", classesTaught: ["تاسع أ", "ثامن أ", "ثامن ب", "ثامن ج", "ثامن د", "ثامن هـ", "ثامن و", "سابع ج", "سابع د", "سابع هـ", "سابع و"], username: "mohammad_khalil", password: "changeme123", certificates: ["علوم بيت المقدس"] },
-    { id: "227731", fullName: "حسن جاسر صبحي ابوالريش", role: "معلم", major: "نظم المعلومات الادارية", degree: "بكالوريس", university: "الزيتونة الاردنية", experience: "سنة واحدة", graduationYear: "2024", courses: "معارف ومهارات ثقافة مالية", phone: "0788764249", subject: "الثقافة المالية", classesT
+    { id: "227731", fullName: "حسن جاسر صبحي ابوالريش", role: "معلم", major: "نظم المعلومات الادارية", degree: "بكالوريس", university: "الزيتونة الاردنية", experience: "سنة واحدة", graduationYear: "2024", courses: "معارف ومهارات ثقافة مالية", phone: "0788764249", subject: "الثقافة المالية", classesTaught: ["تاسع أ", "ثامن (أ-و)", "سابع (أ-و)"], username: "hasan_abulrish", password: "changeme12
