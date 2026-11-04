@@ -3,74 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة المعلم الإلكترونية</title>
+    <title>لوحة تحكم المعلم - البوابة المدرسية</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-slate-100 font-sans min-h-screen">
+<body class="bg-slate-100 font-sans min-h-screen flex flex-col">
 
-    <nav class="bg-indigo-900 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <i data-lucide="book-open" class="text-yellow-400 w-6 h-6"></i>
-            <span class="font-bold text-lg">بوابة المعلم - لوحة التحكم الشخصية</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <span id="teacherWelcomeName" class="text-xs text-yellow-300 bg-indigo-950 px-3 py-1.5 rounded-lg"></span>
-            <a href="index.html" class="text-sm bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg transition">تسجيل خروج</a>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto p-6 space-y-6">
-        <!-- بطاقة الترحيب -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center justify-between">
-            <div>
-                <h1 id="teacherTitleName" class="text-2xl font-black text-indigo-950 mb-1">أهلاً بك، أستاذ</h1>
-                <p class="text-slate-500 text-sm">متابعة حصيدك اليومي وجداول الأشغال والتعويضات الخاصة بك.</p>
+    <!-- شريط العرض العلوي -->
+    <header class="bg-indigo-950 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center border border-yellow-500/30">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-yellow-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black" id="headerTeacherName">جارٍ التحميل...</h1>
+                    <p class="text-xs text-slate-300" id="headerTeacherRole">معلم المادة</p>
+                </div>
             </div>
-            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-indigo-900 font-bold text-sm">
-                المادة الأساسية: <span id="teacherSubjectText" class="text-indigo-600">رياضيات</span>
+            <div class="flex items-center gap-3">
+                <a href="edit-profile.html" class="bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i data-lucide="user-pen" class="w-4 h-4 text-yellow-400"></i> تعديل حسابي (اسم المستخدم)
+                </a>
+                <button onclick="logout()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 border border-red-500/20">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> خروج
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full space-y-6">
+
+        <!-- بطاقة المعلومات الشخصية والنصاب -->
+        <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+                <div class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold">
+                    <i data-lucide="book-open" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 font-medium">التخصص الأكاديمي</p>
+                    <p class="text-sm font-bold text-indigo-950" id="profileMajor">-</p>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center font-bold">
+                    <i data-lucide="award" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 font-medium">المادة الأساسية</p>
+                    <p class="text-sm font-bold text-indigo-950" id="profileSubject">-</p>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center font-bold">
+                    <i data-lucide="calendar-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 font-medium">النصاب التدريبي الأسبوعي</p>
+                    <p class="text-sm font-bold text-indigo-950"><span id="profileQuota">-</span> حصص</p>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+                <div class="w-12 h-12 bg-purple-100 text-purple-700 rounded-xl flex items-center justify-center font-bold">
+                    <i data-lucide="phone" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 font-medium">رقم الهاتف المعتمد</p>
+                    <p class="text-sm font-bold text-indigo-950" id="profilePhone">-</p>
+                </div>
             </div>
         </div>
 
-        <!-- جدول الحصص والأشغال الخاصة بالمعلم -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold text-indigo-950 mb-4 flex items-center gap-2">
-                <i data-lucide="calendar"></i> جدول الحصص وحصص الأشغال المسندة إليك
-            </h2>
+        <!-- جدول البرنامج الأسبوعي المرتب -->
+        <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-200">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-lg font-black text-indigo-950">البرنامج الأسبوعي وجدول الحصص</h2>
+                    <p class="text-xs text-slate-500">مواعيد الحصص والصفوف المسندة إلكترونياً بناءً على البرنامج المعتمد</p>
+                </div>
+                <span class="px-3 py-1 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200" id="usernameDisplayBadge">اسم المستخدم: -</span>
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="w-full text-right border-collapse text-sm">
                     <thead>
-                        <tr class="bg-slate-100 text-slate-700">
-                            <th class="p-3 border">اليوم / الحصة</th>
-                            <th class="p-3 border">الصف والشعبة</th>
-                            <th class="p-3 border">نوع الحصة (أساسية / تعويضية)</th>
-                            <th class="p-3 border">الحالة</th>
+                        <tr class="bg-indigo-950 text-white text-xs">
+                            <th class="p-3.5 rounded-r-xl">اليوم</th>
+                            <th class="p-3.5">الحصة الأولى</th>
+                            <th class="p-3.5">الحصة الثانية</th>
+                            <th class="p-3.5">الحصة الثالثة</th>
+                            <th class="p-3.5">الحصة الرابعة</th>
+                            <th class="p-3.5">الحصة الخامسة</th>
+                            <th class="p-3.5">الحصة السادسة</th>
+                            <th class="p-3.5 rounded-l-xl">الحصة السابعة</th>
                         </tr>
                     </thead>
-                    <tbody id="teacherScheduleTable">
-                        <tr>
-                            <td class="p-3 border">الحصة الثالثة</td>
-                            <td class="p-3 border">العاشر - أ</td>
-                            <td class="p-3 border font-semibold text-emerald-700">حصة تعويضية (شغل)</td>
-                            <td class="p-3 border"><span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-xs font-bold">مؤكدة</span></td>
-                        </tr>
+                    <tbody id="teacherWeeklyScheduleBody" class="divide-y divide-slate-100 text-slate-700 font-medium text-xs">
+                        <!-- تعبئة الجدول برمجياً -->
                     </tbody>
                 </table>
             </div>
         </div>
+
     </main>
 
     <script src="js/main.js"></script>
     <script>
         lucide.createIcons();
         document.addEventListener('DOMContentLoaded', () => {
-            const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-            if(session.name) {
-                document.getElementById('teacherWelcomeName').textContent = session.name;
-                document.getElementById('teacherTitleName').textContent = `أهلاً بك، أ. ${session.name}`;
-            }
+            loadTeacherDashboardData();
         });
+
+        function logout() {
+            localStorage.removeItem('currentUserSession');
+            window.location.href = 'login.html';
+        }
     </script>
 </body>
 </html>
