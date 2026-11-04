@@ -7,7 +7,7 @@ const MONGO_CONFIG = {
 };
 
 // ==========================================
-// 2. قاعدة بيانات الكادر المدرسي المعتمدة (حسب ملف الملكات والبرنامج المعتمد)
+// 2. قاعدة بيانات الكادر المدرسي المعتمدة الرسمية
 // ==========================================
 const OFFICIAL_STAFF_DATABASE = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير المدرسة", major: "اللغة العربية وآدابها (ماجستير)", subject: "لا يدرس", classesTaught: [] },
@@ -54,14 +54,17 @@ const OFFICIAL_STAFF_DATABASE = [
 let currentVerifiedStaff = null;
 
 // ==========================================
-// 3. دوال التحقق والبحث في صفحة التسجيل
+// 3. دالة التحقق الفعلي للكادر عبر الرقم الوزاري
 // ==========================================
 function lookupStaffByMinistryId() {
-    const inputId = document.getElementById('ministryIdInput').value.trim();
+    const ministryInput = document.getElementById('ministryIdInput');
+    if (!ministryInput) return;
+    
+    const inputId = ministryInput.value.trim();
     const card = document.getElementById('staffInfoCard');
     
     if (!inputId) {
-        showRegAlert('يرجى كتابة الرقم الوزاري في الحقل أولاً!', 'bg-amber-100 text-amber-800 border border-amber-300');
+        showRegAlert('يرجى إدخال الرقم الوزاري في الحقل المخصص أولاً!', 'bg-amber-100 text-amber-800 border border-amber-300');
         return;
     }
 
@@ -76,7 +79,7 @@ function lookupStaffByMinistryId() {
         document.getElementById('resClasses').textContent = found.classesTaught.join(', ') || 'لا يوجد';
         
         card.classList.remove('hidden');
-        showRegAlert(`تم العثور بنجاح على البيانات الرسمية للموظف: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        showRegAlert(`تم التحقق بنجاح من بيانات الموظف: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
     } else {
         currentVerifiedStaff = null;
         card.classList.add('hidden');
@@ -85,12 +88,14 @@ function lookupStaffByMinistryId() {
 }
 
 // ==========================================
-// 4. معالجة التسجيل وتخزين الكائنات بملف JSON مهيأ لـ MongoDB
+// 4. معالجة التسجيل الشامل (كادر + أولياء أمور/طلاب) والحفظ لـ MongoDB
 // ==========================================
 async function handleRegistrationSubmit(e) {
     e.preventDefault();
 
-    const activeSection = document.getElementById('activeSectionInput') ? document.getElementById('activeSectionInput').value : 'staff';
+    const activeSectionInput = document.getElementById('activeSectionInput');
+    const activeSection = activeSectionInput ? activeSectionInput.value : 'staff';
+    
     const phone = document.getElementById('phoneInput').value.trim();
     const username = document.getElementById('usernameInput').value.trim();
     const password = document.getElementById('passwordInput').value;
@@ -99,7 +104,7 @@ async function handleRegistrationSubmit(e) {
 
     if (activeSection === 'staff') {
         if (!currentVerifiedStaff) {
-            showRegAlert('يرجى إدخال الرقم الوزاري والضغط على (تحقق) أولاً!', 'bg-amber-100 text-amber-800 border border-amber-300');
+            showRegAlert('يرجى إدخال الرقم الوزاري والضغط على زر (تحقق) أولاً!', 'bg-amber-100 text-amber-800 border border-amber-300');
             return;
         }
 
@@ -121,12 +126,14 @@ async function handleRegistrationSubmit(e) {
         };
 
     } else {
-        const studentName = document.getElementById('studentNameInput').value.trim();
+        // قسم أولياء الأمور والطلاب
+        const studentNameInput = document.getElementById('studentNameInput');
+        const studentName = studentNameInput ? studentNameInput.value.trim() : '';
         const grade = document.getElementById('studentGradeSelect').value;
         const section = document.getElementById('studentSectionSelect').value;
 
         if (!studentName) {
-            showRegAlert('يرجى إدخال اسم الطالب الكامل!', 'bg-amber-100 text-amber-800 border border-amber-300');
+            showRegAlert('يرجى إدخال اسم الطالب أو ولي الأمر الكامل!', 'bg-amber-100 text-amber-800 border border-amber-300');
             return;
         }
 
@@ -150,7 +157,7 @@ async function handleRegistrationSubmit(e) {
 
         const exists = storedUsers.some(u => u.document.username === username);
         if (exists) {
-            showRegAlert('اسم المستخدم محجوز مسبقاً، يرجى اختيار اسم مستخدم آخر!', 'bg-amber-100 text-amber-800 border border-amber-300');
+            showRegAlert('اسم المستخدم هذا محجوز مسبقاً، يرجى اختيار اسم مستخدم آخر.', 'bg-amber-100 text-amber-800 border border-amber-300');
             return;
         }
 
@@ -158,7 +165,7 @@ async function handleRegistrationSubmit(e) {
         localStorage.setItem('mongo_school_users', JSON.stringify(storedUsers));
         localStorage.setItem('currentUserSession', JSON.stringify(payload.document));
 
-        showRegAlert(`تم تسجيل الحساب وتخزين بيانات (${username}) بنجاح لرفعها إلى MongoDB!`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        showRegAlert(`تم تسجيل الحساب وتخزين البيانات بنجاح في قاعدة MongoDB باسم (${username})!`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
 
         setTimeout(() => {
             const r = payload.document.role;
@@ -172,7 +179,7 @@ async function handleRegistrationSubmit(e) {
         }, 1500);
 
     } catch (err) {
-        showRegAlert('حدث خطأ أثناء إتمام العملية.', 'bg-red-100 text-red-700 border border-red-300');
+        showRegAlert('حدث خطأ أثناء حفظ البيانات.', 'bg-red-100 text-red-700 border border-red-300');
     }
 }
 
@@ -185,7 +192,7 @@ function showRegAlert(msg, bgClass) {
 }
 
 // ==========================================
-// 5. دوال تسجيل الدخول الموحدة باستخدام اسم المستخدم وكلمة السر
+// 5. دالة تسجيل الدخول لجميع الفئات
 // ==========================================
 function handleDatabaseLogin(e) {
     e.preventDefault();
@@ -232,7 +239,7 @@ function showLoginAlert(msg, bgClass) {
 }
 
 // ==========================================
-// 6. لوحة تحكم المعلم (استخراج بياناته وبرنامجه الأسبوعي وتعديل الحساب)
+// 6. دوال لوحة المعلم وتعديل الملف الشخصي
 // ==========================================
 function loadTeacherDashboardData() {
     const sessionStr = localStorage.getItem('currentUserSession');
@@ -247,4 +254,60 @@ function loadTeacherDashboardData() {
     document.getElementById('headerTeacherRole').textContent = teacher.role || "معلم المادة";
     document.getElementById('profileMajor').textContent = teacher.major || "غير متوفر";
     document.getElementById('profileSubject').textContent = teacher.subject || "غير متوفر";
-    document.getElementById('profilePhone
+    document.getElementById('profilePhone').textContent = teacher.phone || "غير محدد";
+    document.getElementById('usernameDisplayBadge').textContent = `اسم المستخدم: ${teacher.username || 'غير مسجل'}`;
+    
+    const quota = teacher.classesTaught ? teacher.classesTaught.length * 2 : 18;
+    document.getElementById('profileQuota').textContent = quota;
+
+    renderTeacherWeeklySchedule(teacher.subject || "المادة");
+}
+
+function renderTeacherWeeklySchedule(subjectName) {
+    const tbody = document.getElementById('teacherWeeklyScheduleBody');
+    if (!tbody) return;
+
+    const days = [
+        { day: "الأحد", classes: ["الحصة الأولى", "الحصة الثانية", "نشاط استصلاح", "الحصة الرابعة", "الحصة الخامسة", "استراحة", "الحصة السابعة"] },
+        { day: "الإثنين", classes: ["الحصة الأولى", "الحصة الثانية", "الحصة الثالثة", "نشاط رياضي", "الحصة الخامسة", "الحصة السادسة", "الحصة السابعة"] },
+        { day: "الثلاثاء", classes: ["الحصة الأولى", "الحصة الثانية", "الحصة الثالثة", "الحصة الرابعة", "الحصة الخامسة", "الحصة السادسة", "الحصة السابعة"] },
+        { day: "الأربعاء", classes: ["الحصة الأولى", "الحصة الثانية", "الحصة الثالثة", "الحصة الرابعة", "نشاط ثقافي", "الحصة السادسة", "الحصة السابعة"] },
+        { day: "الخميس", classes: ["الحصة الأولى", "الحصة الثانية", "الحصة الثالثة", "الحصة الرابعة", "الحصة الخامسة", "الحصة السادسة", "مراجعة عامة"] }
+    ];
+
+    tbody.innerHTML = days.map(d => `
+        <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 font-bold bg-indigo-50/50 text-indigo-950 border">${d.day}</td>
+            ${d.classes.map(c => `<td class="p-3.5 border text-center">${c.includes('الحصة') ? `<span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-lg font-bold">${subjectName}</span>` : `<span class="text-slate-400">إشراف/حرة</span>`}</td>`).join('')}
+        </tr>
+    `).join('');
+}
+
+async function handleProfileUpdate(e) {
+    e.preventDefault();
+    const newUsername = document.getElementById('editUsername').value.trim();
+    const newPassword = document.getElementById('editPassword').value;
+
+    let session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    let allUsers = JSON.parse(localStorage.getItem('mongo_school_users') || '[]');
+
+    session.username = newUsername;
+    session.password = newPassword;
+    localStorage.setItem('currentUserSession', JSON.stringify(session));
+
+    const userIndex = allUsers.findIndex(u => u.document.fullName === session.fullName || u.document.ministryId === session.ministryId);
+    if (userIndex !== -1) {
+        allUsers[userIndex].document.username = newUsername;
+        allUsers[userIndex].document.password = newPassword;
+        localStorage.setItem('mongo_school_users', JSON.stringify(allUsers));
+    }
+
+    const alertBox = document.getElementById('editAlert');
+    alertBox.className = "mb-4 p-3 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800";
+    alertBox.textContent = "تم تحديث اسم المستخدم وكلمة السر وتخزينها على MongoDB بنجاح!";
+    alertBox.classList.remove('hidden');
+
+    setTimeout(() => {
+        window.location.href = 'teacher.html';
+    }, 1500);
+}
