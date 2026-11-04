@@ -13,44 +13,64 @@
 <body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white/95 backdrop-blur-md max-w-md w-full rounded-3xl shadow-2xl overflow-hidden my-6 border border-white/20">
-        <!-- Header -->
+        <!-- رأس الصفحة -->
         <div class="bg-indigo-950 text-white p-8 text-center relative overflow-hidden">
             <div class="absolute -right-10 -top-10 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl"></div>
             <div class="relative z-10">
                 <div class="w-16 h-16 bg-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-yellow-500/30">
                     <i data-lucide="log-in" class="w-10 h-10 text-yellow-400"></i>
                 </div>
-                <h1 class="text-2xl font-black tracking-tight">تسجيل الدخول للنظام</h1>
-                <p class="text-xs text-slate-300 mt-1">أدخل بيانات الحساب الذي قمت بتفعيله سابقاً</p>
+                <h1 class="text-2xl font-black tracking-tight">تسجيل الدخول</h1>
+                <p class="text-xs text-slate-300 mt-1">أدخل اسم المستخدم وكلمة السر الخاصة بحسابك</p>
             </div>
         </div>
 
         <div class="p-8">
-            <!-- Alert Message -->
-            <div id="loginAlert" class="hidden mb-5 p-3.5 rounded-xl text-sm text-center font-medium shadow-sm transition-all"></div>
+            <!-- صندوق التنبيهات -->
+            <div id="loginAlert" class="hidden mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all"></div>
 
-            <form onsubmit="handleUniversalLogin(event)" class="space-y-5">
+            <form onsubmit="handleDatabaseLogin(event)" class="space-y-5">
+                <!-- اسم المستخدم -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
-                        <i data-lucide="user-check" class="w-4 h-4 text-indigo-600"></i> تحديد نوع الحساب
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                        <i data-lucide="at-sign" class="w-4 h-4 text-indigo-600"></i> اسم المستخدم (Username)
                     </label>
-                    <select id="loginRoleType" onchange="toggleLoginType()" class="w-full p-3 border border-slate-300 rounded-xl bg-slate-50/50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <option value="staff">كادر المدرسة (مدير / مساعد / إداري / معلم)</option>
-                        <option value="student">طالب / ولي أمر</option>
-                    </select>
+                    <input type="text" id="loginUsername" required placeholder="أدخل اسم المستخدم..." class="w-full p-3.5 border border-slate-300 rounded-xl bg-slate-50/50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
                 </div>
 
-                <!-- حقل الرقم الوزاري (للكوادر) -->
-                <div id="ministryInputGroup">
-                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
-                        <i data-lucide="hash" class="w-4 h-4 text-indigo-600"></i> الرقم الوزاري المعتمد
+                <!-- كلمة السر -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                        <i data-lucide="lock" class="w-4 h-4 text-indigo-600"></i> كلمة السر
                     </label>
-                    <input type="text" id="loginMinistryId" placeholder="أدخل الرقم الوزاري..." class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-600 outline-none transition bg-slate-50/50">
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full p-3.5 border border-slate-300 rounded-xl bg-slate-50/50 font-bold text-indigo-950 focus:ring-2 focus:ring-indigo-600 outline-none">
                 </div>
 
-                <!-- حقل الاسم (للطلاب) -->
-                <div id="studentInputGroup" class="hidden">
-                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
-                        <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i> اسم الطالب المسجل
-                    </label>
-                    <input type="text" id="loginStudentName" placeholder="أدخل اسم الطالب الكامل..." class="w-full p-3 border border-
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white py-4 rounded-xl font-black transition shadow-lg shadow-indigo-950/30 flex items-center justify-center gap-2 cursor-pointer text-base mt-2">
+                    <i data-lucide="arrow-left-to-line" class="w-5 h-5 text-yellow-400"></i> دخول البوابة
+                </button>
+            </form>
+
+            <!-- رابط الانتقال لصفحة التسجيل لأول مرة -->
+            <div class="mt-6 pt-5 border-t border-slate-200/80 text-center space-y-2">
+                <p class="text-sm text-slate-600 font-medium">تسجل لأول مرة؟</p>
+                <a href="register.html" class="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 font-bold text-sm rounded-xl border border-amber-500/30 transition">
+                    <i data-lucide="user-plus" class="w-4 h-4 text-amber-600"></i> أنشئ حسابك الجديد الآن
+                </a>
+            </div>
+
+            <!-- العودة للرئيسية -->
+            <div class="mt-4 text-center">
+                <a href="index.html" class="text-xs text-slate-500 hover:text-slate-800 transition inline-flex items-center gap-1">
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i> العودة للصفحة الرئيسية
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
