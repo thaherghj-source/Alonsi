@@ -38,8 +38,9 @@
     <!-- المحتوى الرئيسي -->
     <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-        <!-- العمود الجانبي للبطاقات الإحصائية -->
+        <!-- العمود الجانبي: البطاقات الإحصائية والملف الوظيفي والدورات -->
         <div class="lg:col-span-4 space-y-6">
+            <!-- البطاقات الإحصائية السريعة -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
@@ -82,7 +83,7 @@
                 </div>
             </div>
 
-            <!-- الملف الوظيفي -->
+            <!-- الملف الوظيفي ومعلومات التواصل -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
                 <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
                     <i data-lucide="user-check" class="w-5 h-5 text-indigo-600"></i>
@@ -103,9 +104,27 @@
                     </div>
                 </div>
             </div>
+
+            <!-- قسم الدورات والشهادات وإضافتها -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="award" class="w-5 h-5 text-indigo-600"></i>
+                        <h3 class="font-bold text-slate-800 text-sm">الدورات والشهادات التدريبية</h3>
+                    </div>
+                </div>
+                <div id="certificatesContainer" class="flex flex-wrap gap-2">
+                    <!-- يتم تعبئتها ديناميكياً -->
+                    <p class="text-xs text-slate-400">جاري التحميل...</p>
+                </div>
+                <form onsubmit="handleAddCertificate(event)" class="pt-2 flex gap-2">
+                    <input type="text" id="newCertificateInput" placeholder="أضف دورة جديدة..." class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button type="submit" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm">إضافة</button>
+                </form>
+            </div>
         </div>
 
-        <!-- العمود الرئيسي لعرض جدول الحصص الأسبوعي -->
+        <!-- العمود الرئيسي: جدول الحصص الأسبوعي المعتمد -->
         <div class="lg:col-span-8 space-y-6">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -132,22 +151,27 @@
                         </thead>
                         <tbody id="scheduleTableBody" class="text-xs text-slate-700 font-medium">
                             <tr>
-                                <td colspan="8" class="text-center p-6 text-slate-400">جاري جلب الجدول من قاعدة البيانات...</td>
+                                <td colspan="8" class="text-center p-6 text-slate-400">جاري جلب جدول الحصص من قاعدة البيانات...</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
     </main>
 
-    <!-- استدعاء ملف السكريبت الرئيسي -->
+    <!-- استدعاء الملفات البرمجية بالترتيب الصحيح -->
+    <script src="js/schedule.js"></script>
+    <script src="js/sync-data.js"></script>
     <script src="js/main.js"></script>
     <script>
-        function logout() {
-            localStorage.removeItem("currentTeacher");
-            window.location.href = "index.html"; 
-        }
+        // تفعيل أيقونات Lucide عند اكتمال التحميل
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
     </script>
 </body>
 </html>
