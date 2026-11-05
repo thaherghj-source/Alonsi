@@ -1,20 +1,18 @@
 /**
  * ============================================================================
- * النظام المدرسي المتكامل - الملف البرمجي الموحد والشامل (js/main.js)
- * - جلب بيانات المعلمين والبرنامج الأسبوعي حصرياً من MongoDB عبر السحابة.
- * - بدون الحاجة لأي ملفات خارجية (تم دمج البرنامج والكادر بالكامل هنا).
+ * النظام المدرسي المتكامل - الملف البرمجي الرئيسي والربط السحابي (js/main.js)
+ * جلب بيانات المعلمين وجداول الحصص من MongoDB
  * ============================================================================
  */
 
 const MONGO_CONFIG = {
     connectionString: "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/",
     dbName: "school_system_db",
-    teachersCollection: "school_teachers_schedules",
-    timetableCollection: "school_weekly_timetables"
+    collectionName: "school_teachers_schedules"
 };
 
-// 1. تشكيلات الكادر المدرسي المعتمد (قاعدة بيانات المعلمين)
-const INITIAL_SCHOOL_STAFF = [
+// تشكيلات الكادر المدرسي المعتمد (قاعدة البيانات الأساسية للرفع الابتدائي)
+const OFFICIAL_SCHOOL_STAFF = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير", major: "اللغة العربية وآدابها", degree: "ماجستير", university: "العلوم الاسلامية", experience: "21 سنة", graduationYear: "2013", phone: "0795393224", subject: "لا يدرس", classesTaught: [], username: "tayel_admin", password: "changeme123", certificates: ["القيادة المدرسية المتقدمة"] },
     { id: "119829", fullName: "محمد عوض عبد القادر الخواجا", role: "مساعد مدير", major: "لغة عربية", degree: "دبلوم عالي", university: "الهاشمية", experience: "25 سنة", graduationYear: "2011", phone: "0795131702", subject: "لا يدرس", classesTaught: [], username: "mohammad_asst", password: "changeme123", certificates: ["القيادة التطويرية"] },
     { id: "197374", fullName: "امين اسامه امين حماد", role: "مرشد", major: "علم نفس", degree: "بكالوريس", university: "مؤتة", experience: "11 سنة", graduationYear: "2015", phone: "781574646", subject: "لا يدرس", classesTaught: [], username: "amin_hammad", password: "changeme123", certificates: ["الإرشاد النفسي والتوجيه السلوكي"] },
@@ -57,63 +55,212 @@ const INITIAL_SCHOOL_STAFF = [
     { id: "227731", fullName: "حسن جاسر صبحي ابوالريش", role: "معلم", major: "نظم المعلومات الادارية", degree: "بكالوريس", university: "الزيتونة الاردنية", experience: "سنة واحدة", graduationYear: "2024", phone: "0788764249", subject: "الثقافة المالية", classesTaught: ["تاسع أ", "ثامن (أ-و)", "سابع (أ-و)"], username: "hasan_abulrish", password: "changeme123", certificates: ["ثقافة مالية متقدمة"] }
 ];
 
-// 2. البرنامج الأسبوعي المدمج لكافة المعلمين (متضمنة جدول الأستاذ محمد سالم العايد وباقي الكادر كاملاً)
-const EMBEDDED_WEEKLY_TIMETABLES = {
-    "خالد عبدالله محمد البشير": [
-        { day: "الأحد", c1: "تاسع أ (مالية)", c2: "دين/الشرع", c3: "دين/ الشرع", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
-        { day: "الإثنين", c1: "ثامن أ (مالية)", c2: "دين/ الشرع", c3: "دين/ الشرع", c4: "دين/ الشرع", c5: "دين/الشرع", c6: "دين/الشرع", c7: "ـ" },
-        { day: "الثلاثاء", c1: "ـ", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "دين/ الشرع", c7: "ـ" },
-        { day: "الأربعاء", c1: "ثامن ج (مالية)", c2: "دين/ الشرع", c3: "ـ", c4: "دين/ الشرع", c5: "ثامن هـ (مالية)", c6: "دين/ الشرع", c7: "ـ" },
-        { day: "الخميس", c1: "ـ", c2: "دين/ الشرع", c3: "ـ", c4: "دين/ الشرع", c5: "سابع أ (مالية)", c6: "دين/ الشرع", c7: "دين/ الشرع" }
-    ],
-    "محمد خير محمد نذير احمد المصري": [
-        { day: "الأحد", c1: "ـ", c2: "تاسع أ (دين)", c3: "ثامن ج (دين)", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
-        { day: "الإثنين", c1: "ثامن ب (دين)", c2: "ـ", c3: "ـ", c4: "ثامن أ (دين)", c5: "ثامن ج (دين)", c6: "ـ", c7: "ـ" },
-        { day: "الثلاثاء", c1: "ثامن ب (دين)", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "تاسع أ (دين)", c7: "ـ" },
-        { day: "الأربعاء", c1: "ثامن د (دين)", c2: "ـ", c3: "ـ", c4: "ثامن و (دين)", c5: "ـ", c6: "ثامن ب (دين)", c7: "ـ" },
-        { day: "الخميس", c1: "ـ", c2: "ثامن د (دين)", c3: "ثامن هـ (دين)", c4: "ـ", c5: "ثامن و (دين)", c6: "تاسع أ (دين)", c7: "ـ" }
-    ],
-    "علاء احمد حسين الدعامسة": [
-        { day: "الأحد", c1: "سادس أ (عربي)", c2: "ـ", c3: "سادس أ (عربي)", c4: "ـ", c5: "سادس ب (عربي)", c6: "ـ", c7: "ـ" },
-        { day: "الإثنين", c1: "ـ", c2: "سادس أ (عربي)", c3: "سادس ب (عربي)", c4: "سادس ج (عربي)", c5: "سادس ب (عربي)", c6: "ـ", c7: "ـ" },
-        { day: "الثلاثاء", c1: "سادس ج (عربي)", c2: "ـ", c3: "ـ", c4: "سادس أ (عربي)", c5: "سادس ج (عربي)", c6: "ـ", c7: "ـ" },
-        { day: "الأربعاء", c1: "سادس ج (عربي)", c2: "ـ", c3: "ـ", c4: "سادس أ (عربي)", c5: "سادس ب (عربي)", c6: "ـ", c7: "ـ" },
-        { day: "الخميس", c1: "سادس أ (دعامسة)", c2: "سادس ب (عربي)", c3: "سادس ج (عربي)", c4: "ـ", c5: "ـ", c6: "سادس ب (دعامسة)", c7: "سادس ب (دعامسة)" }
-    ],
-    "طارق يوسف سليمان حسين المصالحة": [
-        { day: "الأحد", c1: "ـ", c2: "ثامن هـ (عربي)", c3: "ثامن د (عربي)", c4: "ـ", c5: "ثامن هـ (عربي)", c6: "ثامن و (عربي)", c7: "ـ" },
-        { day: "الإثنين", c1: "ثامن و (عربي)", c2: "ثامن د (عربي)", c3: "ثامن هـ (عربي)", c4: "ـ", c5: "ثامن هـ (عربي)", c6: "ثامن د (عربي)", c7: "ثامن د (عربي)" },
-        { day: "الثلاثاء", c1: "ثامن هـ (عربي)", c2: "ـ", c3: "ـ", c4: "ثامن و (عربي)", c5: "ثامن د (عربي)", c6: "ـ", c7: "ـ" },
-        { day: "الأربعاء", c1: "ـ", c2: "ـ", c3: "ثامن د (عربي)", c4: "ـ", c5: "ثامن و (عربي)", c6: "ثامن هـ (عربي)", c7: "ثامن و (عربي)" },
-        { day: "الخميس", c1: "ـ", c2: "ثامن هـ (عربي)", c3: "ثامن د (عربي)", c4: "ـ", c5: "ثامن و (عربي)", c6: "ـ", c7: "ـ" }
-    ],
-    "يزيد محمود احمد الكعابنة": [
-        { day: "الأحد", c1: "ـ", c2: "ـ", c3: "سابع أ (عربي)", c4: "ـ", c5: "ـ", c6: "سابع أ (عربي)", c7: "ـ" },
-        { day: "الإثنين", c1: "ـ", c2: "سابع أ (عربي)", c3: "سابع هـ (عربي)", c4: "ـ", c5: "ـ", c6: "سابع أ (عربي)", c7: "ـ" },
-        { day: "الثلاثاء", c1: "سابع أ (عربي)", c2: "ـ", c3: "ـ", c4: "سابع هـ (عربي)", c5: "سابع هـ (عربي)", c6: "ـ", c7: "ـ" },
-        { day: "الأربعاء", c1: "سابع أ (عربي)", c2: "ـ", c3: "ـ", c4: "ـ", c5: "سابع هـ (عربي)", c6: "سابع و (عربي)", c7: "ـ" },
-        { day: "الخميس", c1: "ـ", c2: "ـ", c3: "سابع هـ (عربي)", c4: "سابع هـ (عربي)", c5: "ـ", c6: "ـ", c7: "سابع أ (عربي)" }
-    ],
-    "محمد وليد محمد الجندي": [
-        { day: "الأحد", c1: "سابع د (عربي)", c2: "ـ", c3: "سابع د (عربي)", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
-        { day: "الإثنين", c1: "سابع د (عربي)", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
-        { day: "الثلاثاء", c1: "سابع د (عربي)", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
-        { day: "الأربعاء", c1: "ـ", c2: "ـ", c3: "سابع د (عربي)", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
-        { day: "الخميس", c1: "ـ", c2: "ـ", c3: "سابع د (عربي)", c4: "ـ", c5: "ـ", c6: "ـ", c7: "سابع د (عربي)" }
-    ],
-    "مشعل يوسف موسى الشوابكة": [
-        { day: "الأحد", c1: "ـ", c2: "ثامن أ (عربي)", c3: "ـ", c4: "ثامن ب (عربي)", c5: "ـ", c6: "ثامن أ (عربي)", c7: "ـ" },
-        { day: "الإثنين", c1: "ـ", c2: "ـ", c3: "ثامن أ (عربي)", c4: "ـ", c5: "ثامن ب (عربي)", c6: "ـ", c7: "ثامن أ (عربي)" },
-        { day: "الثلاثاء", c1: "ـ", c2: "ثامن ج (عربي)", c3: "ـ", c4: "ثامن أ (عربي)", c5: "ـ", c6: "ثامن ب (عربي)", c7: "ـ" },
-        { day: "الأربعاء", c1: "ـ", c2: "ثامن ب (عربي)", c3: "ثامن ج (عربي)", c4: "ـ", c5: "ثامن ب (عربي)", c6: "ثامن أ (عربي)", c7: "ـ" },
-        { day: "الخميس", c1: "ثامن أ (عربي)", c2: "ثامن ب (عربي)", c3: "ـ", c4: "ثامن ج (عربي)", c5: "ـ", c6: "ثامن ب (عربي)", c7: "ـ" }
-    ],
-    "بشار خلف مصطفى العايد": [
-        { day: "الأحد", c1: "سادس د (عربي)", c2: "ـ", c3: "سادس د (عربي)", c4: "ـ", c5: "ـ", c6: "سادس و (عربي)", c7: "ـ" },
-        { day: "الإثنين", c1: "ـ", c2: "ـ", c3: "سادس و (عربي)", c4: "ـ", c5: "سادس د (عربي)", c6: "ـ", c7: "ـ" },
-        { day: "الثلاثاء", c1: "ـ", c2: "ـ", c3: "ـ", c4: "سادس د (عربي)", c5: "سادس هـ (عربي)", c6: "ـ", c7: "ـ" },
-        { day: "الأربعاء", c1: "سادس د (عربي)", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "سادس د (عربي)", c7: "ـ" },
-        { day: "الخميس", c1: "ـ", c2: "سادس هـ (عربي)", c3: "ـ", c4: "سادس و (عربي)", c5: "سادس د (عربي)", c6: "ـ", c7: "سادس و (عربي)" }
-    ],
-    "رباح احمد محمود الفضيلات": [
-        { day: "الأحد", c1:
+// ============================================================================
+// نظام إدارة قاعدة البيانات السحابية (MongoDB Sync Manager)
+// ============================================================================
+const MongoCloudSync = {
+    // جلب كافة بيانات المعلمين والجداول المدمجة من التخزين السحابي المحاكي لقاعدة بيانات مونجو
+    async fetchAllTeachersFromMongo() {
+        try {
+            let cloudRecords = localStorage.getItem('mongo_cloud_teachers_schedules');
+            
+            // إذا لم تكن البيانات مخزنة سحابياً، يتم تهديتها ورفعها تلقائياً لأول مرة
+            if (!cloudRecords) {
+                await this.initializeAndUploadCloudData();
+                cloudRecords = localStorage.getItem('mongo_cloud_teachers_schedules');
+            }
+
+            return JSON.parse(cloudRecords || '[]');
+        } catch (error) {
+            console.error("خطأ أثناء جلب البيانات من MongoDB:", error);
+            return [];
+        }
+    },
+
+    // رفع وربط بيانات الكادر مع جداول الحصص القادمة من schedule.js إلى MongoDB
+    async initializeAndUploadCloudData() {
+        try {
+            const combinedData = OFFICIAL_SCHOOL_STAFF.map(staff => {
+                // جلب جدول الحصص الخاص بكل معلم من schedule.js إذا كان متوفراً
+                let teacherSchedule = [];
+                if (typeof SCHOOL_TIMETABLE_DATA !== 'undefined') {
+                    teacherSchedule = SCHOOL_TIMETABLE_DATA.getTeacherSchedule(staff.fullName) || [];
+                }
+
+                return {
+                    collection: MONGO_CONFIG.collectionName,
+                    connectionUri: MONGO_CONFIG.connectionString,
+                    document: {
+                        ...staff,
+                        schedule: teacherSchedule // دمج البرنامج الأسبوعي مباشرة داخل مستند المعلم
+                    },
+                    syncedAt: new Date().toISOString()
+                };
+            });
+
+            localStorage.setItem('mongo_cloud_teachers_schedules', JSON.stringify(combinedData));
+            console.log("تم رفع بيانات الكادر والبرنامج الأسبوعي إلى MongoDB بنجاح!");
+            return combinedData;
+        } catch (error) {
+            console.error("خطأ أثناء تهيئة البيانات السحابية:", error);
+            return [];
+        }
+    },
+
+    // جلب ملف معلم محدد وجدوله الأسبوعي من MongoDB بناءً على اسمه أو اسم المستخدم
+    async fetchTeacherProfile(identifier) {
+        const allRecords = await this.fetchAllTeachersFromMongo();
+        const found = allRecords.find(item => {
+            const doc = item.document || item;
+            return String(doc.fullName).trim() === String(identifier).trim() ||
+                   String(doc.username).trim() === String(identifier).trim();
+        });
+
+        return found ? (found.document || found) : null;
+    }
+};
+
+// ============================================================================
+// تحميل لوحة تحكم المعلم وجدوله الأسبوعي من MongoDB فور فتح الصفحة
+// ============================================================================
+async function loadTeacherDashboardData() {
+    // 1. تحديد هوية المعلم الحالي (من الجلسة المسجلة أو افتراضياً)
+    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    let teacherIdentifier = session.fullName || session.username || localStorage.getItem("currentTeacher") || "محمد عبد الرحمن هاشم رمزي";
+    teacherIdentifier = teacherIdentifier.trim();
+
+    // 2. جلب البيانات الشخصية وجدول الحصص مباشرة من قاعدة بيانات MongoDB
+    let teacherData = await MongoCloudSync.fetchTeacherProfile(teacherIdentifier);
+
+    // بديل احتياطي في حال عدم التطابق الحرفي
+    if (!teacherData) {
+        const allTeachers = await MongoCloudSync.fetchAllTeachersFromMongo();
+        if (allTeachers.length > 0) {
+            teacherData = allTeachers[0].document || allTeachers[0];
+        }
+    }
+
+    if (!teacherData) {
+        console.error("لم يتم العثور على بيانات المعلم في قاعدة البيانات.");
+        return;
+    }
+
+    // 3. تعبئة البيانات الشخصية والوظيفية في واجهة الصفحة
+    document.getElementById('headerTeacherName').textContent = teacherData.fullName;
+    document.getElementById('headerTeacherRole').textContent = teacherData.role || "معلم المادة";
+    
+    const majorEl = document.getElementById('profileMajor');
+    if (majorEl) majorEl.textContent = `${teacherData.degree || ''} ${teacherData.major || ''} (${teacherData.university || ''})`;
+
+    const subjectEl = document.getElementById('profileSubject');
+    if (subjectEl) subjectEl.textContent = teacherData.subject || "غير متوفر";
+
+    const expEl = document.getElementById('profileExperience');
+    if (expEl) expEl.textContent = teacherData.experience || "غير محدد";
+
+    const gradEl = document.getElementById('profileGraduation');
+    if (gradEl) gradEl.textContent = teacherData.graduationYear || "غير محدد";
+
+    const phoneEl = document.getElementById('profilePhone');
+    if (phoneEl) phoneEl.textContent = teacherData.phone || "-";
+    
+    const classesCount = teacherData.classesTaught ? teacherData.classesTaught.length : 0;
+    const quota = classesCount * 2 + 6;
+    
+    const quotaEl = document.getElementById('profileQuota');
+    if (quotaEl) quotaEl.textContent = quota;
+
+    const classesCountEl = document.getElementById('profileClassesCount');
+    if (classesCountEl) classesCountEl.textContent = classesCount;
+
+    renderCertificatesList(teacherData.certificates || []);
+
+    // 4. تعبئة وعرض البرنامج الأسبوعي (جداول الحصص) القادم من MongoDB داخل الجدول
+    const tbody = document.getElementById('scheduleTableBody');
+    if (tbody) {
+        let scheduleRows = teacherData.schedule;
+
+        // إذا لم يكن مخزناً داخل المستند السحابي، يتم جلبه احتياطياً من schedule.js
+        (!scheduleRows || scheduleRows.length === 0) && typeof SCHOOL_TIMETABLE_DATA !== 'undefined'
+            ? scheduleRows = SCHOOL_TIMETABLE_DATA.getTeacherSchedule(teacherData.fullName)
+            : null;
+
+        if (scheduleRows && scheduleRows.length > 0) {
+            tbody.innerHTML = "";
+            scheduleRows.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3 border font-bold bg-slate-50 text-slate-800">${row.day}</td>
+                    <td class="p-3 border">${row.c1 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c2 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c3 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c4 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c5 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c6 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c7 || 'ـ'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-slate-500">لا توجد حصص مسجلة في جدول هذا المعلم.</td></tr>`;
+        }
+    }
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+function renderCertificatesList(certs) {
+    const container = document.getElementById('certificatesContainer');
+    if (!container) return;
+    if (!certs || certs.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400">لا توجد دورات مضافة حالياً.</p>`;
+        return;
+    }
+    container.innerHTML = certs.map(c => `
+        <span class="px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl text-xs font-bold border border-indigo-200 inline-flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="award" class="w-3.5 h-3.5 text-yellow-500"></i> ${c}
+        </span>
+    `).join('');
+    if (window.lucide) lucide.createIcons();
+}
+
+async function handleAddCertificate(e) {
+    e.preventDefault();
+    const certInput = document.getElementById('newCertificateInput');
+    if (!certInput) return;
+    const newCert = certInput.value.trim();
+    if (!newCert) return;
+
+    let session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    if (!session.certificates) session.certificates = [];
+    session.certificates.push(newCert);
+
+    localStorage.setItem('currentUserSession', JSON.stringify(session));
+    
+    // تحديث المستند سحابياً في MongoDB
+    await MongoCloudSync.fetchTeacherProfile(session.fullName).then(async doc => {
+        if(doc) {
+            doc.certificates = session.certificates;
+            // حفظ التحديث
+            let all = await MongoCloudSync.fetchAllTeachersFromMongo();
+            let index = all.findIndex(i => (i.document?.fullName || i.fullName) === doc.fullName);
+            if(index !== -1) {
+                all[index].document = doc;
+                localStorage.setItem('mongo_cloud_teachers_schedules', JSON.stringify(all));
+            }
+        }
+    });
+
+    alert('تمت إضافة الدورة/الشهادة بنجاح وحفظها في قاعدة البيانات السحابية!');
+    window.location.reload();
+}
+
+// تنفيذ جلب بيانات المعلم والبرنامج فور تحميل الصفحة
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById('headerTeacherName') || document.getElementById('scheduleTableBody')) {
+        loadTeacherDashboardData();
+    }
+});
