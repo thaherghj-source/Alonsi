@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * النظام المدرسي المتكامل - الملف البرمجي الرئيسي والنهائي (js/main.js)
- * إعادة ضبط البيانات، جلب كافة الكادر، وحفظ بيانات التسجيل في MongoDB سحابياً
+ * إدارة الاتصال بقاعدة بيانات MongoDB، جلب بيانات المعلمين، وعرض لوحة التحكم
  * ============================================================================
  */
 
@@ -61,7 +61,6 @@ let verifiedStaffMember = null;
 // نظام الاتصال السحابي وإدارة قاعدة بيانات MongoDB
 // ============================================================================
 const MongoCloudDatabase = {
-    // 1. جلب كافة المعلمين والكادر من MongoDB
     async fetchAllUsers() {
         try {
             let cloudData = localStorage.getItem('mongo_cloud_school_users');
@@ -75,10 +74,8 @@ const MongoCloudDatabase = {
         }
     },
 
-    // 2. حذف كافة أسماء المستخدمين والبدء من جديد (Reset)
     async resetAndInitializeCloud() {
         try {
-            // مسح التخزين القديم بالكامل والبدء بنسخة نظيفة
             localStorage.removeItem('mongo_cloud_school_users');
             localStorage.removeItem('currentUserSession');
 
@@ -97,7 +94,6 @@ const MongoCloudDatabase = {
         }
     },
 
-    // 3. حفظ بيانات التسجيل الجديدة في MongoDB لاستخدامها لاحقاً عند تسجيل الدخول
     async saveUserDocument(userDocument) {
         try {
             let users = await this.fetchAllUsers();
@@ -133,7 +129,7 @@ const MongoCloudDatabase = {
 };
 
 // ============================================================================
-// زر التحقق: يقوم بحذف كافة الأسماء القديمة والبدء من جديد وجلب الكادر من مونجو
+// عمليات التحقق والتسجيل والدخول
 // ============================================================================
 async function verifyStaffFromMongo() {
     const ministryInput = document.getElementById('ministryIdInput');
@@ -147,10 +143,7 @@ async function verifyStaffFromMongo() {
         return;
     }
 
-    // بناءً على طلبك: عند الضغط على زر التحقق يتم حذف أسماء المستخدمين والبيانات والبدء من جديد
     await MongoCloudDatabase.resetAndInitializeCloud();
-
-    // جلب كافة المعلمين والكادر جميعاً من MongoDB بعد إعادة الضبط
     let allUsers = await MongoCloudDatabase.fetchAllUsers();
     
     let foundWrapper = allUsers.find(u => {
@@ -164,12 +157,7 @@ async function verifyStaffFromMongo() {
         verifiedStaffMember = found;
         document.getElementById('resFullName').textContent = found.fullName;
         document.getElementById('resRole').textContent = found.role;
-        document.getElementById('resMajor').textContent = `${found.degree || ''} ${found.major || ''} (${found.university || ''})`;
-        document.getElementById('resSubject').textContent = found.subject || "غير متوفر";
-        document.getElementById('resClasses').textContent = (found.classesTaught && found.classesTaught.length > 0) ? found.classesTaught.join(', ') : 'لا يوجد';
-        
-        if (card) card.classList.remove('hidden');
-        showRegisterAlert(`تم إعادة تعيين قاعدة البيانات وجلب الكادر! تم التحقق من: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        document.getElementById('resMajor').textContent = `${found.degree \vert{}\vert{} ''}${found.major || ''} (${found.university \vert{}\vert{} ''})`; document.getElementById('resSubject').textContent = found.subject \vert{}\vert{} "غير متوفر"; document.getElementById('resClasses').textContent = (found.classesTaught && found.classesTaught.length > 0) ? found.classesTaught.join(', ') : 'لا يوجد';  if (card) card.classList.remove('hidden'); showRegisterAlert(`تم إعادة تعيين قاعدة البيانات وجلب الكادر! تم التحقق من: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
     } else {
         verifiedStaffMember = null;
         if (card) card.classList.add('hidden');
@@ -177,7 +165,6 @@ async function verifyStaffFromMongo() {
     }
 }
 
-// معالجة التسجيل وحفظ حساب المستخدم وكلمة السر لاستخدامها لاحقاً عند الدخول
 async function handleRegistrationSubmit(e) {
     e.preventDefault();
 
@@ -247,14 +234,13 @@ async function handleRegistrationSubmit(e) {
             password: password,
             fullName: parentName,
             role: "طالب / ولي أمر",
-            studentClass: `${grade} - ${section}`,
+            studentClass: `${grade} -${section}`,
             phone: phone,
             registeredAt: new Date().toISOString(),
             certificates: []
         };
     }
 
-    // حفظ بيانات التسجيل في MongoDB لاستخدامها عند الدخول مرة أخرى
     const success = await MongoCloudDatabase.saveUserDocument(userDocumentToSave);
 
     if (success) {
@@ -277,7 +263,6 @@ function showRegisterAlert(msg, bgClass) {
     box.classList.remove('hidden');
 }
 
-// تسجيل الدخول والتحقق من الحسابات المخزنة في MongoDB
 async function handleDatabaseLogin(e) {
     e.preventDefault();
 
@@ -327,35 +312,7 @@ function redirectBasedOnRole(role) {
 function showLoginAlert(msg, bgClass) {
     const box = document.getElementById('loginAlert');
     if (!box) return;
-    box.className = `mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all ${bgClass}`;
-    box.textContent = msg;
-    box.classList.remove('hidden');
-}
-
-function logout() {
-    localStorage.removeItem('currentUserSession');
-    window.location.href = 'login.html';
-}
-
-// تحميل بيانات المعلم وجدوله من الملفات المعتمدة
-async function loadTeacherDashboardData() {
-    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-    if (!session.username) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    let allUsers = await MongoCloudDatabase.fetchAllUsers();
-    let currentStaffRecord = allUsers.find(u => {
-        const doc = u.document || u;
-        return String(doc.username).trim() === String(session.username).trim();
-    });
-
-    const teacherData = currentStaffRecord ? (currentStaffRecord.document || currentStaffRecord) : session;
-
-    document.getElementById('headerTeacherName').textContent = teacherData.fullName;
-    document.getElementById('headerTeacherRole').textContent = teacherData.role;
-    document.getElementById('profileMajor').textContent = `${teacherData.degree || ''} ${teacherData.major || ''} (${teacherData.university || ''})`;
+    box.className = `mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all ${bgClass}`; box.textContent = msg; box.classList.remove('hidden'); }  function logout() { localStorage.removeItem('currentUserSession'); window.location.href = 'login.html'; }  // ============================================================================ // تحميل لوحة تحكم المعلم وجدوله الخاص تلقائياً من قاعدة البيانات // ============================================================================ async function loadTeacherDashboardData() { const session = JSON.parse(localStorage.getItem('currentUserSession') \vert{}\vert{} '{}'); if (!session.username) { window.location.href = 'login.html'; return; }  let allUsers = await MongoCloudDatabase.fetchAllUsers(); let currentStaffRecord = allUsers.find(u => { const doc = u.document \vert{}\vert{} u; return String(doc.username).trim() === String(session.username).trim(); });  const teacherData = currentStaffRecord ? (currentStaffRecord.document \vert{}\vert{} currentStaffRecord) : session;  // تعبئة البيانات الشخصية في واجهة المعلم document.getElementById('headerTeacherName').textContent = teacherData.fullName; document.getElementById('headerTeacherRole').textContent = teacherData.role; document.getElementById('profileMajor').textContent = `${teacherData.degree || ''} ${teacherData.major \vert{}\vert{} ''} (${teacherData.university || ''})`;
     document.getElementById('profileSubject').textContent = teacherData.subject || "غير متوفر";
     document.getElementById('profileExperience').textContent = teacherData.experience || "غير محدد";
     document.getElementById('profileGraduation').textContent = teacherData.graduationYear || "غير محدد";
@@ -368,6 +325,7 @@ async function loadTeacherDashboardData() {
 
     renderCertificatesList(teacherData.certificates || []);
     
+    // استدعاء الجدول الأسبوعي الخاص بالمعلم من ملف schedule.js
     if (typeof SCHOOL_TIMETABLE_DATA !== 'undefined') {
         SCHOOL_TIMETABLE_DATA.renderScheduleTable('teacherWeeklyScheduleBody', teacherData.fullName, teacherData.subject || "المادة", teacherData.classesTaught || []);
     }
@@ -382,37 +340,4 @@ function renderCertificatesList(certs) {
     }
     container.innerHTML = certs.map(c => `
         <span class="px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl text-xs font-bold border border-indigo-200 inline-flex items-center gap-1.5 shadow-sm">
-            <i data-lucide="award" class="w-3.5 h-3.5 text-yellow-500"></i> ${c}
-        </span>
-    `).join('');
-    if (window.lucide) lucide.createIcons();
-}
-
-async function handleAddCertificate(e) {
-    e.preventDefault();
-    const certInput = document.getElementById('newCertificateInput');
-    const newCert = certInput.value.trim();
-    if (!newCert) return;
-
-    let session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-    if (!session.certificates) session.certificates = [];
-    session.certificates.push(newCert);
-
-    localStorage.setItem('currentUserSession', JSON.stringify(session));
-    await MongoCloudDatabase.saveUserDocument(session);
-
-    alert('تمت إضافة الدورة/الشهادة بنجاح وحفظها في قاعدة البيانات!');
-    window.location.href = 'teacher.html';
-}
-
-function loadGenericDashboard() {
-    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-    if (!session.username) {
-        window.location.href = 'login.html';
-        return;
-    }
-    const nameEl = document.getElementById('userNameDisplay');
-    const roleEl = document.getElementById('userRoleDisplay');
-    if (nameEl) nameEl.textContent = session.fullName;
-    if (roleEl) roleEl.textContent = session.role;
-}
+            <i data-lucide="award" class="w-3.5 h-3
