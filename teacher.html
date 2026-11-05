@@ -81,45 +81,46 @@
             </div>
         </div>
 
-        <!-- جدول الحصص الأسبوعي المستخرج من البرنامج المعتمد وتوزيع المباحث -->
+        <!-- جدول الحصص الأسبوعي (الأيام فوق بعضها والحصص جنب بعضها) -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div class="flex items-center gap-2">
                     <i data-lucide="calendar" class="w-5 h-5 text-indigo-600"></i>
                     <h2 class="font-bold text-slate-800 text-base">جدول الحصص الأسبوعي المعتمد</h2>
                 </div>
-                <span class="text-xs px-2.5 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg border border-indigo-100">مستخرج من البرنامج النهائي</span>
+                <span class="text-xs px-2.5 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg border border-indigo-100">عرض الأيام والحصص</span>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-right text-sm">
+                <table class="w-full text-right text-sm border-collapse">
                     <thead class="bg-slate-100 text-slate-600 text-xs font-bold border-b border-slate-200">
                         <tr>
-                            <th class="p-3.5 border">اليوم / الحصة</th>
-                            <th class="p-3.5 border text-center">الأولى</th>
-                            <th class="p-3.5 border text-center">الثانية</th>
-                            <th class="p-3.5 border text-center">الثالثة</th>
-                            <th class="p-3.5 border text-center">الرابعة</th>
-                            <th class="p-3.5 border text-center">الخامسة</th>
-                            <th class="p-3.5 border text-center">السادسة</th>
-                            <th class="p-3.5 border text-center">السابعة</th>
+                            <th class="p-3.5 border text-center w-32">اليوم</th>
+                            <th class="p-3.5 border text-center">الحصة 1</th>
+                            <th class="p-3.5 border text-center">الحصة 2</th>
+                            <th class="p-3.5 border text-center">الحصة 3</th>
+                            <th class="p-3.5 border text-center">الحصة 4</th>
+                            <th class="p-3.5 border text-center">الحصة 5</th>
+                            <th class="p-3.5 border text-center">الحصة 6</th>
+                            <th class="p-3.5 border text-center">الحصة 7</th>
                         </tr>
                     </thead>
                     <tbody id="teacherWeeklyScheduleBody" class="divide-y divide-slate-100 text-slate-700 font-medium text-xs">
-                        <!-- يتم جلب وعرض الجدول برمجياً عبر schedule.js و main.js -->
+                        <!-- سيتم تعبئة الجدول برمجياً بحيث يكون كل يوم صف مستقل والحصص بجانبه -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- قسم الدورات والشهادات والبيانات الشخصية -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- قسم الدورات، الشهادات، إعدادات الحساب، والملف الوظيفي -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
             <!-- إدارة الدورات والشهادات -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
                 <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
                     <i data-lucide="award" class="w-5 h-5 text-indigo-600"></i>
                     <h3 class="font-bold text-slate-800 text-sm">دوراتي وشهاداتي المعتمدة</h3>
                 </div>
-                <div id="certificatesContainer" class="flex flex-wrap gap-2">
+                <div id="certificatesContainer" class="flex flex-wrap gap-2 min-h-[80px]">
                     <!-- يتم تعبئة الشهادات برمجياً -->
                 </div>
                 <form onsubmit="handleAddCertificate(event)" class="mt-4 pt-3 border-t border-slate-100 flex gap-2">
@@ -127,6 +128,29 @@
                         class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
                         إضافة
+                    </button>
+                </form>
+            </div>
+
+            <!-- إعدادات الحساب (تغيير اسم المستخدم وكلمة المرور) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
+                <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <i data-lucide="lock" class="w-5 h-5 text-indigo-600"></i>
+                    <h3 class="font-bold text-slate-800 text-sm">إعدادات الحساب وكلمة المرور</h3>
+                </div>
+                <form onsubmit="handleUpdateCredentials(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-semibold">اسم المستخدم الجديد:</label>
+                        <input type="text" id="updateUsername" required
+                            class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-semibold">كلمة المرور الجديدة:</label>
+                        <input type="password" id="updatePassword" placeholder="أدخل كلمة المرور الجديدة" required
+                            class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                        حفظ التعديلات
                     </button>
                 </form>
             </div>
@@ -152,6 +176,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
     </main>
@@ -161,14 +186,50 @@
         جميع الحقوق محفوظة © النظام المدرسي المتكامل 2027
     </footer>
 
-    <!-- ربط ملفات الجافا سكريبت بالترتيب المطلوب (schedule.js أولاً ثم main.js ثانياً) -->
+    <!-- ربط ملفات الجافا سكريبت بالترتيب -->
     <script src="js/schedule.js"></script>
     <script src="js/main.js"></script>
     <script>
+        // دالة مخصصة لتحديث بيانات اعتماد المعلم (اسم المستخدم وكلمة المرور) وتخزينها محلياً
+        function handleUpdateCredentials(event) {
+            event.preventDefault();
+            const newUsername = document.getElementById('updateUsername').value.trim();
+            const newPassword = document.getElementById('updatePassword').value.trim();
+            
+            let currentTeacher = JSON.parse(localStorage.getItem('currentTeacher') || '{}');
+            if (!currentTeacher.name) {
+                alert('الرجاء تسجيل الدخول أولاً');
+                return;
+            }
+
+            // تحديث البيانات في التخزين المحلي
+            currentTeacher.username = newUsername;
+            currentTeacher.password = newPassword;
+            localStorage.setItem('currentTeacher', JSON.stringify(currentTeacher));
+
+            // تحديث قاعدة بيانات المعلمين العامة في localStorage إن وجدت
+            let allTeachers = JSON.parse(localStorage.getItem('schoolStaff') || '[]');
+            let tIndex = allTeachers.findIndex(t => t.name === currentTeacher.name);
+            if (tIndex !== -1) {
+                allTeachers[tIndex].username = newUsername;
+                allTeachers[tIndex].password = newPassword;
+                localStorage.setItem('schoolStaff', JSON.stringify(allTeachers));
+            }
+
+            alert('تم تحديث اسم المستخدم وكلمة المرور بنجاح!');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof loadTeacherDashboardData === 'function') {
                 loadTeacherDashboardData();
             }
+            // تعبئة حقل اسم المستخدم الحالي في خانة التعديل تلقائياً إن وجد
+            let currentTeacher = JSON.parse(localStorage.getItem('currentTeacher') || '{}');
+            if (currentTeacher.username) {
+                const uInput = document.getElementById('updateUsername');
+                if (uInput) uInput.value = currentTeacher.username;
+            }
+
             if (window.lucide) {
                 lucide.createIcons();
             }
