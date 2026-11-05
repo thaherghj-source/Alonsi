@@ -328,42 +328,94 @@ function logout() {
 }
 
 // ============================================================================
-// تحميل لوحة تحكم المعلم وجدوله الخاص تلقائياً من قاعدة البيانات
+// تحميل لوحة تحكم المعلم وجدوله الخاص تلقائياً من قاعدة البيانات والسحاب
 // ============================================================================
 async function loadTeacherDashboardData() {
     const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-    if (!session.username) {
-        window.location.href = 'login.html';
+    let teacherName = session.fullName;
+    
+    if (!teacherName) {
+        teacherName = localStorage.getItem("currentTeacher") || "محمد عبد الرحمن هاشم رمزي";
+    }
+
+    let teacherData = null;
+    if (typeof MongoSyncManager !== 'undefined') {
+        teacherData = await MongoSyncManager.fetchTeacherProfileFromCloud(teacherName);
+    }
+
+    if (!teacherData) {
+        // بديل احتياطي في حال عدم العثور عبر المزامنة
+        let allUsers = await MongoCloudDatabase.fetchAllUsers();
+        let record = allUsers.find(u => {
+            const doc = u.document || u;
+            return String(doc.fullName).trim() === String(teacherName).trim() ||
+                   String(doc.username).trim() === String(session.username).trim();
+        });
+        teacherData = record ? (record.document || record) : session;
+    }
+
+    if (!teacherData || !teacherData.fullName) {
+        console.error("لم يتم العثور على بيانات المعلم.");
         return;
     }
 
-    let allUsers = await MongoCloudDatabase.fetchAllUsers();
-    let currentStaffRecord = allUsers.find(u => {
-        const doc = u.document || u;
-        return String(doc.username).trim() === String(session.username).trim();
-    });
-
-    const teacherData = currentStaffRecord ? (currentStaffRecord.document || currentStaffRecord) : session;
-
-    // تعبئة البيانات الشخصية في واجهة المعلم
+    // تعبئة البيانات الشخصية في واجهة لوحة التحكم
     document.getElementById('headerTeacherName').textContent = teacherData.fullName;
-    document.getElementById('headerTeacherRole').textContent = teacherData.role;
-    document.getElementById('profileMajor').textContent = `${teacherData.degree || ''} ${teacherData.major || ''} (${teacherData.university || ''})`;
-    document.getElementById('profileSubject').textContent = teacherData.subject || "غير متوفر";
-    document.getElementById('profileExperience').textContent = teacherData.experience || "غير محدد";
-    document.getElementById('profileGraduation').textContent = teacherData.graduationYear || "غير محدد";
-    document.getElementById('profilePhone').textContent = teacherData.phone || "غير محدد";
+    document.getElementById('headerTeacherRole').textContent = teacherData.role || "معلم";
+    
+    const majorEl = document.getElementById('profileMajor');
+    if (majorEl) majorEl.textContent = `${teacherData.degree || ''} ${teacherData.major || ''} (${teacherData.university || ''})`;
+
+    const subjectEl = document.getElementById('profileSubject');
+    if (subjectEl) subjectEl.textContent = teacherData.subject || "غير متوفر";
+
+    const expEl = document.getElementById('profileExperience');
+    if (expEl) expEl.textContent = teacherData.experience || "غير محدد";
+
+    const gradEl = document.getElementById('profileGraduation');
+    if (gradEl) gradEl.textContent = teacherData.graduationYear || "غير محدد";
+
+    const phoneEl = document.getElementById('profilePhone');
+    if (phoneEl) phoneEl.textContent = teacherData.phone || "-";
     
     const classesCount = teacherData.classesTaught ? teacherData.classesTaught.length : 0;
     const quota = classesCount * 2 + 6;
-    document.getElementById('profileQuota').textContent = quota;
-    document.getElementById('profileClassesCount').textContent = classesCount;
+    
+    const quotaEl = document.getElementById('profileQuota');
+    if (quotaEl) quotaEl.textContent = quota;
+
+    const classesCountEl = document.getElementById('profileClassesCount');
+    if (classesCountEl) classesCountEl.textContent = classesCount;
 
     renderCertificatesList(teacherData.certificates || []);
     
-    // استدعاء الجدول الأسبوعي الخاص بالمعلم من ملف schedule.js
+    // جلب وعرض جدول الحصص الأسبوعي الخاص بالمعلم
     if (typeof SCHOOL_TIMETABLE_DATA !== 'undefined') {
-        SCHOOL_TIMETABLE_DATA.renderScheduleTable('teacherWeeklyScheduleBody', teacherData.fullName, teacherData.subject || "المادة", teacherData.classesTaught || []);
+        SCHOOL_TIMETABLE_DATA.renderScheduleTable('scheduleTableBody', teacherData.fullName, teacherData.subject || "المادة", teacherData.classesTaught || []);
+    } else if (teacherData.schedule && Array.isArray(teacherData.schedule)) {
+        const tbody = document.getElementById('scheduleTableBody') || document.getElementById('teacherWeeklyScheduleBody');
+        if (tbody) {
+            tbody.innerHTML = "";
+            teacherData.schedule.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3 border font-bold bg-slate-50 text-slate-800">${row.day}</td>
+                    <td class="p-3 border">${row.c1 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c2 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c3 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c4 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c5 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c6 || 'ـ'}</td>
+                    <td class="p-3 border">${row.c7 || 'ـ'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    }
+
+    if (window.lucide) {
+        lucide.createIcons();
     }
 }
 
@@ -399,3 +451,10 @@ async function handleAddCertificate(e) {
     alert('تمت إضافة الدورة/الشهادة بنجاح وحفظها في قاعدة البيانات!');
     window.location.reload();
 }
+
+// تشغيل جلب البيانات تلقائياً عند تحميل صفحة المعلم
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById('headerTeacherName') || document.getElementById('scheduleTableBody')) {
+        loadTeacherDashboardData();
+    }
+});
