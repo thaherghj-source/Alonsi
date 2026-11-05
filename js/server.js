@@ -1,74 +1,35 @@
-/**
- * ============================================================================
- * النظام المدرسي المتكامل - ملف الخادم الرئيسي (server.js)
- * متوافق مع Node.js, Express, و MongoDB Atlas
- * ============================================================================
- */
-
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const TeacherSchedule = require('./models/TeacherSchedule'); // استدعاء نموذج جدول الحصص
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.static('public')); // إذا كانت ملفات Frontend (HTML, CSS, JS) في مجلد public
-
-// 🔗 رابط الاتصال بقاعدة بيانات MongoDB الخاص بك
-// تذكير: استبدل <db_password> بكلمة المرور الحقيقية، وحدد اسم قاعدة البيانات (مثال: schoolDB) قبل علامة الاستفهام
-const MONGO_URI = "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/schoolDB?retryWrites=true&w=majority";
-
-// الاتصال بقاعدة البيانات
-mongoose.connect(MONGO_URI)
-  .then(() => {
-      console.log("تم الاتصال بنجاح بقاعدة بيانات MongoDB Atlas 🚀");
-  })
-  .catch((err) => {
-      console.error("فشل الاتصال بقاعدة البيانات ❌:", err.message);
-  });
-
-// ==========================================
-// مسارات الـ API (Endpoints)
-// ==========================================
-
-// 1. مسار لجلب كافة جداول المعلمين والإداريين
-app.get('/api/schedules', async (req, res) => {
+// مسار لجلب جدول معلم محدد بناءً على اسمه
+app.get('/api/schedule/:teacherName', async (req, res) => {
     try {
-        const schedules = await TeacherSchedule.find({});
-        res.status(200).json(schedules);
-    } catch (err) {
-        console.error("خطأ أثناء جلب الجداول:", err);
-        res.status(500).json({ error: 'حدث خطأ في الخادم أثناء جلب البيانات' });
-    }
-});
-
-// 2. مسار لإضافة أو تحديث جدول معلم معين (مفيد لو لوحة التحكم تتطلب حفظ التعديلات)
-app.post('/api/schedules', async (req, res) => {
-    try {
-        const { teacherName, schedule } = req.body;
+        const teacherName = decodeURIComponent(req.params.teacherName);
+        const teacherRecord = await TeacherSchedule.findOne({ teacherName: teacherName });
         
-        // البحث عن المعلم وتحديث جدوله، أو إنشاؤه إذا لم يكن موجوداً (Upsert)
-        const updatedSchedule = await TeacherSchedule.findOneAndUpdate(
-            { teacherName: teacherName },
-            { schedule: schedule },
-            { new: true, upsert: true }
-        );
+        if (!teacherRecord) {
+            return res.status(404).json({ error: 'المعلم غير موجود في قاعدة البيانات' });
+        }
 
-        res.status(200).json({ 
-            message: 'تم حفظ الجدول بنجاح ✅', 
-            data: updatedSchedule 
-        });
+        res.status(200).json(teacherRecord);
     } catch (err) {
-        console.error("خطأ أثناء حفظ الجدول:", err);
-        res.status(500).json({ error: 'حدث خطأ أثناء حفظ البيانات' });
+        console.error("خطأ في جلب جدول المعلم:", err);
+        res.status(500).json({ error: 'خطأ في الخادم الداخلي' });
     }
 });
 
-// تشغيل الخادم
-app.listen(PORT, () => {
-    console.log(`الخادم يعمل حالياً على المنفذ: http://localhost:${PORT} 🌐`);
+// مسار التحقق من تسجيل الدخول (Login API مبسط)
+app.post('/api/login', async (req, res) => {
+    try {
+        const { teacherName, password } = req.body;
+        
+        // يمكنك مطابقة كلمة المرور مع المخزنة في قاعدة البيانات أو النظام
+        // كمثال افتراضي: إذا وجدنا اسم المعلم نعتبر الدخول صحيحاً (يمكنك ربطه بجدول كلمات المرور)
+        const teacher = await TeacherSchedule.findOne({ teacherName: teacherName });
+        
+        if (teacher) {
+            res.status(200).json({ message: 'تم تسجيل الدخول بنجاح', teacherName: teacher.teacherName });
+        } else {
+            res.status(401).json({ error: 'اسم المعلم غير متطابق مع السجلات' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في عملية التحقق' });
+    }
 });
