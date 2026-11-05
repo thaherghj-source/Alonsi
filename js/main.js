@@ -157,7 +157,12 @@ async function verifyStaffFromMongo() {
         verifiedStaffMember = found;
         document.getElementById('resFullName').textContent = found.fullName;
         document.getElementById('resRole').textContent = found.role;
-        document.getElementById('resMajor').textContent = `${found.degree \vert{}\vert{} ''}${found.major || ''} (${found.university \vert{}\vert{} ''})`; document.getElementById('resSubject').textContent = found.subject \vert{}\vert{} "غير متوفر"; document.getElementById('resClasses').textContent = (found.classesTaught && found.classesTaught.length > 0) ? found.classesTaught.join(', ') : 'لا يوجد';  if (card) card.classList.remove('hidden'); showRegisterAlert(`تم إعادة تعيين قاعدة البيانات وجلب الكادر! تم التحقق من: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
+        document.getElementById('resMajor').textContent = `${found.degree || ''} ${found.major || ''} (${found.university || ''})`;
+        document.getElementById('resSubject').textContent = found.subject || "غير متوفر";
+        document.getElementById('resClasses').textContent = (found.classesTaught && found.classesTaught.length > 0) ? found.classesTaught.join(', ') : 'لا يوجد';
+        
+        if (card) card.classList.remove('hidden');
+        showRegisterAlert(`تم إعادة تعيين قاعدة البيانات وجلب الكادر! تم التحقق من: (${found.fullName})`, 'bg-emerald-100 text-emerald-800 border border-emerald-300');
     } else {
         verifiedStaffMember = null;
         if (card) card.classList.add('hidden');
@@ -234,7 +239,7 @@ async function handleRegistrationSubmit(e) {
             password: password,
             fullName: parentName,
             role: "طالب / ولي أمر",
-            studentClass: `${grade} -${section}`,
+            studentClass: `${grade} - ${section}`,
             phone: phone,
             registeredAt: new Date().toISOString(),
             certificates: []
@@ -312,7 +317,38 @@ function redirectBasedOnRole(role) {
 function showLoginAlert(msg, bgClass) {
     const box = document.getElementById('loginAlert');
     if (!box) return;
-    box.className = `mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all ${bgClass}`; box.textContent = msg; box.classList.remove('hidden'); }  function logout() { localStorage.removeItem('currentUserSession'); window.location.href = 'login.html'; }  // ============================================================================ // تحميل لوحة تحكم المعلم وجدوله الخاص تلقائياً من قاعدة البيانات // ============================================================================ async function loadTeacherDashboardData() { const session = JSON.parse(localStorage.getItem('currentUserSession') \vert{}\vert{} '{}'); if (!session.username) { window.location.href = 'login.html'; return; }  let allUsers = await MongoCloudDatabase.fetchAllUsers(); let currentStaffRecord = allUsers.find(u => { const doc = u.document \vert{}\vert{} u; return String(doc.username).trim() === String(session.username).trim(); });  const teacherData = currentStaffRecord ? (currentStaffRecord.document \vert{}\vert{} currentStaffRecord) : session;  // تعبئة البيانات الشخصية في واجهة المعلم document.getElementById('headerTeacherName').textContent = teacherData.fullName; document.getElementById('headerTeacherRole').textContent = teacherData.role; document.getElementById('profileMajor').textContent = `${teacherData.degree || ''} ${teacherData.major \vert{}\vert{} ''} (${teacherData.university || ''})`;
+    box.className = `mb-5 p-3.5 rounded-xl text-sm text-center font-bold shadow-sm transition-all ${bgClass}`;
+    box.textContent = msg;
+    box.classList.remove('hidden');
+}
+
+function logout() {
+    localStorage.removeItem('currentUserSession');
+    window.location.href = 'login.html';
+}
+
+// ============================================================================
+// تحميل لوحة تحكم المعلم وجدوله الخاص تلقائياً من قاعدة البيانات
+// ============================================================================
+async function loadTeacherDashboardData() {
+    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    if (!session.username) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    let allUsers = await MongoCloudDatabase.fetchAllUsers();
+    let currentStaffRecord = allUsers.find(u => {
+        const doc = u.document || u;
+        return String(doc.username).trim() === String(session.username).trim();
+    });
+
+    const teacherData = currentStaffRecord ? (currentStaffRecord.document || currentStaffRecord) : session;
+
+    // تعبئة البيانات الشخصية في واجهة المعلم
+    document.getElementById('headerTeacherName').textContent = teacherData.fullName;
+    document.getElementById('headerTeacherRole').textContent = teacherData.role;
+    document.getElementById('profileMajor').textContent = `${teacherData.degree || ''} ${teacherData.major || ''} (${teacherData.university || ''})`;
     document.getElementById('profileSubject').textContent = teacherData.subject || "غير متوفر";
     document.getElementById('profileExperience').textContent = teacherData.experience || "غير محدد";
     document.getElementById('profileGraduation').textContent = teacherData.graduationYear || "غير محدد";
@@ -340,4 +376,26 @@ function renderCertificatesList(certs) {
     }
     container.innerHTML = certs.map(c => `
         <span class="px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl text-xs font-bold border border-indigo-200 inline-flex items-center gap-1.5 shadow-sm">
-            <i data-lucide="award" class="w-3.5 h-3
+            <i data-lucide="award" class="w-3.5 h-3.5 text-yellow-500"></i> ${c}
+        </span>
+    `).join('');
+    if (window.lucide) lucide.createIcons();
+}
+
+async function handleAddCertificate(e) {
+    e.preventDefault();
+    const certInput = document.getElementById('newCertificateInput');
+    if (!certInput) return;
+    const newCert = certInput.value.trim();
+    if (!newCert) return;
+
+    let session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
+    if (!session.certificates) session.certificates = [];
+    session.certificates.push(newCert);
+
+    localStorage.setItem('currentUserSession', JSON.stringify(session));
+    await MongoCloudDatabase.saveUserDocument(session);
+
+    alert('تمت إضافة الدورة/الشهادة بنجاح وحفظها في قاعدة البيانات!');
+    window.location.reload();
+}
