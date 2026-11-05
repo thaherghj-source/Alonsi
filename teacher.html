@@ -24,7 +24,6 @@
                     <i data-lucide="graduation-cap" class="w-6 h-6 text-indigo-300"></i>
                 </div>
                 <div>
-                    <!-- تم إعطاء هذا العنصر ID لضبط اسم المعلم تلقائياً -->
                     <h1 class="text-base font-bold leading-tight" id="headerTeacherName">جاري التحميل...</h1>
                     <span class="text-xs text-indigo-300 font-medium" id="headerTeacherRole">معلم المادة</span>
                 </div>
@@ -114,4 +113,45 @@
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
                     <div class="flex items-center gap-2">
-                        <i data-lucide="calendar"
+                        <i data-lucide="calendar" class="w-5 h-5 text-indigo-600"></i>
+                        <h3 class="font-bold text-slate-800 text-base">جدول الحصص الأسبوعي المعتمد</h3>
+                    </div>
+                </div>
+
+                <!-- جدول الحصص -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-xs font-bold">
+                                <th class="p-3 border">اليوم</th>
+                                <th class="p-3 border">الحصة 1</th>
+                                <th class="p-3 border">الحصة 2</th>
+                                <th class="p-3 border">الحصة 3</th>
+                                <th class="p-3 border">الحصة 4</th>
+                                <th class="p-3 border">الحصة 5</th>
+                                <th class="p-3 border">الحصة 6</th>
+                                <th class="p-3 border">الحصة 7</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleTableBody" class="text-xs text-slate-700 font-medium">
+                            <!-- سيتم تعبئة الحصص ديناميكياً عبر الجافاسكريبت -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- استدعاء ملفات الجافاسكريبت من مجلد js -->
+    <script src="js/schedule.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        // تهيئة أيقونات Lucide
+        lucide.createIcons();
+
+        // دالة تسجيل الخروج
+        function logout() {
+            localStorage.removeItem("currentTeacher");
+            window
