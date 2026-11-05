@@ -5,6 +5,15 @@
  * ============================================================================
  */
 
+// دالة مساعدة لإنشاء جدول فارغ للإداريين ومن لا يدرسون الحصص الصفية
+function createAdministrativeSchedule() {
+    const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"];
+    return days.map(day => ({
+        day: day,
+        c1: "ـ", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ"
+    }));
+}
+
 const SCHOOL_TIMETABLE_DATA = {
     days: ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"],
     periodsCount: 7,
@@ -235,4 +244,33 @@ const SCHOOL_TIMETABLE_DATA = {
             { day: "الأحد", c1: "ـ", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
             { day: "الإثنين", c1: "ـ", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
             { day: "الثلاثاء", c1: "ـ", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
-            { day: "الأربعاء", c1: "ـ", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c
+            { day: "الأربعاء", c1: "ـ", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" },
+            { day: "الخميس", c1: "ـ", c2: "ـ", c3: "ـ", c4: "ـ", c5: "ـ", c6: "ـ", c7: "ـ" }
+        ]
+    },
+
+    /**
+     * دالة البحث المطابق الذكي لجلب جدول المعلم بغض النظر عن الفراغات أو الهمقات البسيطة
+     */
+    getTeacherSchedule(teacherName) {
+        if (!teacherName) return null;
+        const cleanName = teacherName.trim();
+        
+        // محاولة البحث المباشر
+        if (this.teacherSchedules[cleanName]) {
+            return this.teacherSchedules[cleanName];
+        }
+
+        // مطابقة مرنة في حال وجود فروق طفيفة في الأسماء
+        for (const [key, schedule] of Object.entries(this.teacherSchedules)) {
+            if (key.includes(cleanName) || cleanName.includes(key)) {
+                return schedule;
+            }
+        }
+
+        return null;
+    }
+};
+
+// جعل الكائن متاحاً على مستوى النافذة لاستخدامه في باقي ملفات المشروع
+window.SCHOOL_TIMETABLE_DATA = SCHOOL_TIMETABLE_DATA;
