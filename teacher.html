@@ -3,175 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم المعلم | النظام المدرسي المتكامل</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts (Cairo) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Cairo', sans-serif; }
-    </style>
+    <title>لوحة تحكم المعلم | النظام المدرسي</title>
+    <!-- ملف الـ CSS الخاص بتصميم الصفحة (قم بتعديل المسار حسب مشروعك) -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+<body>
 
-    <!-- رأس الصفحة (Header) -->
-    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-800 border border-indigo-700 flex items-center justify-center shadow-inner">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 text-indigo-300"></i>
-                </div>
-                <div>
-                    <h1 class="text-base font-bold leading-tight" id="headerTeacherName">جاري تحميل البيانات...</h1>
-                    <span class="text-xs text-indigo-300 font-medium" id="headerTeacherRole">معلم المادة</span>
-                </div>
-            </div>
-            <button onclick="logout()" class="flex items-center gap-2 px-3.5 py-2 bg-red-600/20 hover:bg-red-600 text-red-200 hover:text-white rounded-xl text-xs font-bold transition border border-red-500/30">
-                <i data-lucide="log-out" class="w-4 h-4"></i>
-                تسجيل الخروج
-            </button>
+    <!-- شريط العنوان العلوي -->
+    <header class="teacher-header">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 15px;">
+            <h1 id="teacher-name-display" style="color: white; font-size: 1.5rem;">جاري التحميل...</h1>
+            <a href="login.html" class="logout-btn" style="background: #ff4d4d; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px;">تسجيل الخروج 🚪</a>
         </div>
     </header>
 
-    <!-- المحتوى الرئيسي -->
-    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-        <!-- العمود الجانبي: البطاقات الإحصائية والملف الوظيفي والدورات -->
-        <div class="lg:col-span-4 space-y-6">
-            <!-- البطاقات الإحصائية السريعة -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
-                        <i data-lucide="book-open" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <span class="text-[11px] text-slate-400 block font-semibold">المبحث / التخصص</span>
-                        <span class="text-xs font-bold text-slate-800" id="profileSubject">-</span>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
-                        <i data-lucide="award" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <span class="text-[11px] text-slate-400 block font-semibold">المؤهل الأكاديمي</span>
-                        <span class="text-xs font-bold text-slate-800" id="profileMajor">-</span>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0">
-                        <i data-lucide="clock" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <span class="text-[11px] text-slate-400 block font-semibold">نصاب الحصص</span>
-                        <span class="text-xs font-bold text-slate-800" id="profileQuota">-</span>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold shrink-0">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <span class="text-[11px] text-slate-400 block font-semibold">الصفوف المسندة</span>
-                        <span class="text-xs font-bold text-slate-800" id="profileClassesCount">-</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- الملف الوظيفي ومعلومات التواصل -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
-                <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
-                    <i data-lucide="user-check" class="w-5 h-5 text-indigo-600"></i>
-                    <h3 class="font-bold text-slate-800 text-sm">الملف الوظيفي والخبرات</h3>
-                </div>
-                <div class="space-y-2.5 text-xs text-slate-600 font-medium">
-                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                        <span class="text-slate-400">سنوات الخبرة:</span>
-                        <span id="profileExperience" class="font-bold text-slate-800">-</span>
-                    </div>
-                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                        <span class="text-slate-400">سنة التخرج:</span>
-                        <span id="profileGraduation" class="font-bold text-slate-800">-</span>
-                    </div>
-                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                        <span class="text-slate-400">رقم الهاتف:</span>
-                        <span id="profilePhone" class="font-bold text-slate-800">-</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- قسم الدورات والشهادات وإضافتها -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="award" class="w-5 h-5 text-indigo-600"></i>
-                        <h3 class="font-bold text-slate-800 text-sm">الدورات والشهادات التدريبية</h3>
-                    </div>
-                </div>
-                <div id="certificatesContainer" class="flex flex-wrap gap-2">
-                    <!-- يتم تعبئتها ديناميكياً -->
-                    <p class="text-xs text-slate-400">جاري التحميل...</p>
-                </div>
-                <form onsubmit="handleAddCertificate(event)" class="pt-2 flex gap-2">
-                    <input type="text" id="newCertificateInput" placeholder="أضف دورة جديدة..." class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button type="submit" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm">إضافة</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- العمود الرئيسي: جدول الحصص الأسبوعي المعتمد -->
-        <div class="lg:col-span-8 space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="calendar" class="w-5 h-5 text-indigo-600"></i>
-                        <h3 class="font-bold text-slate-800 text-base">جدول الحصص الأسبوعي المعتمد</h3>
-                    </div>
-                    <span class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-bold">MongoDB Atlas</span>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700 text-xs font-bold">
-                                <th class="p-3 border">اليوم</th>
-                                <th class="p-3 border">الحصة 1</th>
-                                <th class="p-3 border">الحصة 2</th>
-                                <th class="p-3 border">الحصة 3</th>
-                                <th class="p-3 border">الحصة 4</th>
-                                <th class="p-3 border">الحصة 5</th>
-                                <th class="p-3 border">الحصة 6</th>
-                                <th class="p-3 border">الحصة 7</th>
-                            </tr>
-                        </thead>
-                        <tbody id="scheduleTableBody" class="text-xs text-slate-700 font-medium">
-                            <tr>
-                                <td colspan="8" class="text-center p-6 text-slate-400">جاري جلب جدول الحصص من قاعدة البيانات...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
+    <main class="container" style="padding: 20px;">
+        <!-- قسم جدول الحصص الأسبوعي -->
+        <section class="schedule-section" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2>📅 جدول الحصص الأسبوعي المعمد</h2>
+            
+            <table border="1" class="schedule-table" style="width: 100%; border-collapse: collapse; margin-top: 15px; text-align: center;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="padding: 10px;">اليوم</th>
+                        <th>الحصة الأولى</th>
+                        <th>الحصة الثانية</th>
+                        <th>الحصة الثالثة</th>
+                        <th>الحصة الرابعة</th>
+                        <th>الحصة الخامسة</th>
+                        <th>الحصة السادسة</th>
+                        <th>الحصة السابعة</th>
+                    </tr>
+                </thead>
+                <tbody id="teacher-schedule-body">
+                    <!-- سيتم تعبئة الحصص أوتوماتيكياً عبر ملف الـ JS -->
+                    <tr>
+                        <td colspan="8" style="padding: 20px;">جاري جلب جدول الحصص من البيانات...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
     </main>
 
-    <!-- استدعاء الملفات البرمجية بالترتيب الصحيح -->
+    <!-- استدعاء ملف الـ JavaScript الذي يحتوي على قاعدة بيانات المعلمين وجلب الجداول -->
     <script src="js/schedule.js"></script>
-    <script src="js/sync-data.js"></script>
-    <script src="js/main.js"></script>
-    <script>
-        // تفعيل أيقونات Lucide عند اكتمال التحميل
-        document.addEventListener("DOMContentLoaded", () => {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
-    </script>
 </body>
 </html>
