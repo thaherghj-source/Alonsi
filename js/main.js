@@ -1,11 +1,17 @@
 /**
  * ============================================================================
- * النظام المدرسي المتكامل - الملف البرمجي الرئيسي (js/main.js)
- * متوافق تماماً مع جلب بيانات الملف الشخصي وجداول الحصص من schedule.js
+ * النظام المدرسي المتكامل - الملف البرمجي الرئيسي والربط السحابي (js/main.js)
+ * جلب بيانات المعلمين وجداول الحصص من MongoDB
  * ============================================================================
  */
 
-// تشكيلات الكادر المدرسي المعتمد (الملف الوظيفي والتخصصات)
+const MONGO_CONFIG = {
+    connectionString: "mongodb+srv://thaherghj_db_user:A123456789@cluster0.3nmwwal.mongodb.net/",
+    dbName: "school_system_db",
+    collectionName: "school_teachers_schedules"
+};
+
+// تشكيلات الكادر المدرسي المعتمد (قاعدة البيانات الأساسية للرفع الابتدائي)
 const OFFICIAL_SCHOOL_STAFF = [
     { id: "146193", fullName: "طايل منير عايد نصراوين", role: "مدير", major: "اللغة العربية وآدابها", degree: "ماجستير", university: "العلوم الاسلامية", experience: "21 سنة", graduationYear: "2013", phone: "0795393224", subject: "لا يدرس", classesTaught: [], username: "tayel_admin", password: "changeme123", certificates: ["القيادة المدرسية المتقدمة"] },
     { id: "119829", fullName: "محمد عوض عبد القادر الخواجا", role: "مساعد مدير", major: "لغة عربية", degree: "دبلوم عالي", university: "الهاشمية", experience: "25 سنة", graduationYear: "2011", phone: "0795131702", subject: "لا يدرس", classesTaught: [], username: "mohammad_asst", password: "changeme123", certificates: ["القيادة التطويرية"] },
@@ -50,137 +56,10 @@ const OFFICIAL_SCHOOL_STAFF = [
 ];
 
 // ============================================================================
-// دالة تحميل بيانات المعلم وجدوله من schedule.js وعرضها فوراً في الواجهة
+// نظام إدارة قاعدة البيانات السحابية (MongoDB Sync Manager)
 // ============================================================================
-async function loadTeacherDashboardData() {
-    // 1. تحديد اسم المعلم الحالي من الجلسة أو التخزين المحلي
-    const session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-    let teacherName = session.fullName || localStorage.getItem("currentTeacher") || "محمد عبد الرحمن هاشم رمزي";
-    teacherName = teacherName.trim();
-
-    // 2. البحث عن الملف الوظيفي الكامل للمعلم في القائمة الرسمية
-    let teacherRecord = OFFICIAL_SCHOOL_STAFF.find(s => 
-        s.fullName.trim() === teacherName || 
-        s.fullName.includes(teacherName) || 
-        teacherName.includes(s.fullName)
-    );
-
-    if (!teacherRecord) {
-        teacherRecord = session.fullName ? session : {
-            fullName: teacherName,
-            role: "معلم المادة",
-            major: "تخصص عام",
-            degree: "بكالوريوس",
-            university: "جامعة معتمدة",
-            experience: "10 سنوات",
-            graduationYear: "2015",
-            phone: "ـ",
-            subject: "المادة الدراسية",
-            classesTaught: [],
-            certificates: []
-        };
-    }
-
-    // 3. تعبئة عناصر الملف الشخصي في الصفحة
-    document.getElementById('headerTeacherName').textContent = teacherRecord.fullName;
-    document.getElementById('headerTeacherRole').textContent = teacherRecord.role || "معلم المادة";
-    
-    const majorEl = document.getElementById('profileMajor');
-    if (majorEl) majorEl.textContent = `${teacherRecord.degree || ''} ${teacherRecord.major || ''} (${teacherRecord.university || ''})`;
-
-    const subjectEl = document.getElementById('profileSubject');
-    if (subjectEl) subjectEl.textContent = teacherRecord.subject || "غير متوفر";
-
-    const expEl = document.getElementById('profileExperience');
-    if (expEl) expEl.textContent = teacherRecord.experience || "غير محدد";
-
-    const gradEl = document.getElementById('profileGraduation');
-    if (gradEl) gradEl.textContent = teacherRecord.graduationYear || "غير محدد";
-
-    const phoneEl = document.getElementById('profilePhone');
-    if (phoneEl) phoneEl.textContent = teacherRecord.phone || "-";
-    
-    const classesCount = teacherRecord.classesTaught ? teacherRecord.classesTaught.length : 0;
-    const quota = classesCount * 2 + 6;
-    
-    const quotaEl = document.getElementById('profileQuota');
-    if (quotaEl) quotaEl.textContent = quota;
-
-    const classesCountEl = document.getElementById('profileClassesCount');
-    if (classesCountEl) classesCountEl.textContent = classesCount;
-
-    renderCertificatesList(teacherRecord.certificates || []);
-
-    // 4. استدعاء وعرض جدول الحصص الأسبوعي من ملف schedule.js عبر SCHOOL_TIMETABLE_DATA
-    const tbody = document.getElementById('scheduleTableBody');
-    if (tbody && typeof SCHOOL_TIMETABLE_DATA !== 'undefined') {
-        let scheduleRows = SCHOOL_TIMETABLE_DATA.getTeacherSchedule(teacherRecord.fullName);
-
-        if (!scheduleRows || scheduleRows.length === 0) {
-            scheduleRows = SCHOOL_TIMETABLE_DATA.getTeacherSchedule("محمد عبد الرحمن هاشم رمزي");
-        }
-
-        if (scheduleRows && scheduleRows.length > 0) {
-            tbody.innerHTML = "";
-            scheduleRows.forEach(row => {
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-                tr.innerHTML = `
-                    <td class="p-3 border font-bold bg-slate-50 text-slate-800">${row.day}</td>
-                    <td class="p-3 border">${row.c1 || 'ـ'}</td>
-                    <td class="p-3 border">${row.c2 || 'ـ'}</td>
-                    <td class="p-3 border">${row.c3 || 'ـ'}</td>
-                    <td class="p-3 border">${row.c4 || 'ـ'}</td>
-                    <td class="p-3 border">${row.c5 || 'ـ'}</td>
-                    <td class="p-3 border">${row.c6 || 'ـ'}</td>
-                    <td class="p-3 border">${row.c7 || 'ـ'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } else {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-slate-500">لا توجد حصص مسجلة في جدول هذا المعلم.</td></tr>`;
-        }
-    } else if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-red-500">خطأ: ملف schedule.js أو كائن SCHOOL_TIMETABLE_DATA غير محمل.</td></tr>`;
-    }
-
-    if (window.lucide) {
-        lucide.createIcons();
-    }
-}
-
-function renderCertificatesList(certs) {
-    const container = document.getElementById('certificatesContainer');
-    if (!container) return;
-    if (!certs || certs.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400">لا توجد دورات مضافة حالياً.</p>`;
-        return;
-    }
-    container.innerHTML = certs.map(c => `
-        <span class="px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl text-xs font-bold border border-indigo-200 inline-flex items-center gap-1.5 shadow-sm">
-            <i data-lucide="award" class="w-3.5 h-3.5 text-yellow-500"></i> ${c}
-        </span>
-    `).join('');
-    if (window.lucide) lucide.createIcons();
-}
-
-async function handleAddCertificate(e) {
-    e.preventDefault();
-    const certInput = document.getElementById('newCertificateInput');
-    if (!certInput) return;
-    const newCert = certInput.value.trim();
-    if (!newCert) return;
-
-    let session = JSON.parse(localStorage.getItem('currentUserSession') || '{}');
-    if (!session.certificates) session.certificates = [];
-    session.certificates.push(newCert);
-
-    localStorage.setItem('currentUserSession', JSON.stringify(session));
-    alert('تمت إضافة الدورة/الشهادة بنجاح!');
-    window.location.reload();
-}
-
-// تنفيذ تحميل لوحة التحكم فور فتح الصفحة
-document.addEventListener("DOMContentLoaded", () => {
-    loadTeacherDashboardData();
-});
+const MongoCloudSync = {
+    // جلب كافة بيانات المعلمين والجداول المدمجة من التخزين السحابي المحاكي لقاعدة بيانات مونجو
+    async fetchAllTeachersFromMongo() {
+        try {
+            let cloudRecords
