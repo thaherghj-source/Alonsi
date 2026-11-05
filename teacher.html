@@ -24,7 +24,7 @@
                     <i data-lucide="graduation-cap" class="w-6 h-6 text-indigo-300"></i>
                 </div>
                 <div>
-                    <h1 class="text-base font-bold leading-tight" id="headerTeacherName">جاري التحميل...</h1>
+                    <h1 class="text-base font-bold leading-tight" id="headerTeacherName">جاري تحميل البيانات...</h1>
                     <span class="text-xs text-indigo-300 font-medium" id="headerTeacherRole">معلم المادة</span>
                 </div>
             </div>
@@ -35,13 +35,11 @@
         </div>
     </header>
 
-    <!-- المحتوى الرئيسي (شبكي متكامل) -->
+    <!-- المحتوى الرئيسي -->
     <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
         <!-- العمود الجانبي للبطاقات الإحصائية والملف الوظيفي -->
         <div class="lg:col-span-4 space-y-6">
-            
-            <!-- بطاقات الملخص والإحصاءات (شبكية مصغرة) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
@@ -105,7 +103,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!-- العمود الرئيسي لعرض جدول الحصص الأسبوعي -->
@@ -116,9 +113,9 @@
                         <i data-lucide="calendar" class="w-5 h-5 text-indigo-600"></i>
                         <h3 class="font-bold text-slate-800 text-base">جدول الحصص الأسبوعي المعتمد</h3>
                     </div>
+                    <span class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-bold">MongoDB Atlas</span>
                 </div>
 
-                <!-- جدول الحصص -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-right border-collapse">
                         <thead>
@@ -134,24 +131,23 @@
                             </tr>
                         </thead>
                         <tbody id="scheduleTableBody" class="text-xs text-slate-700 font-medium">
-                            <!-- سيتم تعبئة الحصص ديناميكياً عبر الجافاسكريبت -->
+                            <tr>
+                                <td colspan="8" class="text-center p-6 text-slate-400">جاري جلب الجدول من قاعدة البيانات...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-
     </main>
 
-    <!-- استدعاء ملفات الجافاسكريبت من مجلد js -->
-    <script src="js/schedule.js"></script>
+    <!-- استدعاء ملف الجافاسكريبت الرئيسي المربوط بقاعدة البيانات -->
     <script src="js/main.js"></script>
-    
     <script>
-        // تهيئة أيقونات Lucide
-        lucide.createIcons();
-
-        // دالة تسجيل الخروج
         function logout() {
             localStorage.removeItem("currentTeacher");
-            window
+            window.location.href = "index.html"; 
+        }
+    </script>
+</body>
+</html>
